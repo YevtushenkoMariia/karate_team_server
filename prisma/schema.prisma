@@ -1,0 +1,319 @@
+
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model achievements {
+  id               Int               @id @default(autoincrement())
+  user_id          Int
+  championship_id  Int?
+  category         String?           @db.VarChar(80)
+  place            Int?
+  competition_type competition_type?
+  created_at       DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?         @default(now()) @db.Timestamp(6)
+  championships    championships?    @relation(fields: [championship_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users            users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model championships {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(150)
+  city_id      Int?
+  start_date   DateTime?      @db.Date
+  end_date     DateTime?      @db.Date
+  achievements achievements[]
+  cities       cities?        @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([city_id], map: "idx_championships_city_id")
+}
+
+model cities {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique @db.VarChar(100)
+  country_id    Int?
+  championships championships[]
+  countries     countries?      @relation(fields: [country_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  clubs         clubs[]
+  coaches       coaches[]
+  sportsmen     sportsmen[]
+
+  @@index([country_id], map: "idx_cities_country_id")
+}
+
+model clubs {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique @db.VarChar(100)
+  city_id    Int?
+  created_at DateTime?   @default(now()) @db.Timestamp(6)
+  cities     cities?     @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  coaches    coaches[]
+  sportsmen  sportsmen[]
+}
+
+model coach_sportsman {
+  coach_id     Int
+  sportsman_id Int
+  coaches      coaches   @relation(fields: [coach_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  sportsmen    sportsmen @relation(fields: [sportsman_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([coach_id, sportsman_id])
+  @@index([sportsman_id], map: "idx_coach_sportsman_sportsman_id")
+}
+
+model coaches {
+  user_id         Int                @id
+  karate_level    karate_level_type?
+  city_id         Int?
+  club_id         Int?
+  position        String?            @db.VarChar(100)
+  specialization  String?            @db.VarChar(100)
+  created_at      DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?          @default(now()) @db.Timestamp(6)
+  coach_sportsman coach_sportsman[]
+  cities          cities?            @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  clubs           clubs?             @relation(fields: [club_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([city_id], map: "idx_coaches_city_id")
+  @@index([club_id], map: "idx_coaches_club_id")
+}
+
+model countries {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique @db.VarChar(100)
+  cities cities[]
+}
+
+model groups {
+  id                   Int                    @id @default(autoincrement())
+  author_id            Int
+  name                 String                 @db.VarChar(100)
+  description          String?
+  code                 String                 @unique @db.VarChar(20)
+  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?              @default(now()) @db.Timestamp(6)
+  users                users                  @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  training_plan_groups training_plan_groups[]
+  users_groups         users_groups[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model health_reports {
+  id                      Int       @id @default(autoincrement())
+  user_id                 Int
+  start_date              DateTime  @db.Date
+  end_date                DateTime  @db.Date
+  physical_state_grade    Int?
+  physical_state_comment  String?
+  emotional_state_grade   Int?
+  emotional_state_comment String?
+  created_at              DateTime? @default(now()) @db.Timestamp(6)
+  updated_at              DateTime? @default(now()) @db.Timestamp(6)
+  users                   users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sportsmen {
+  user_id         Int                  @id
+  karate_level    karate_level_type?
+  city_id         Int?
+  club_id         Int?
+  status          sportsman_role_type? @default(JUST_TRAIN)
+  created_at      DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?            @default(now()) @db.Timestamp(6)
+  coach_sportsman coach_sportsman[]
+  cities          cities?              @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  clubs           clubs?               @relation(fields: [club_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([city_id], map: "idx_sportsmen_city_id")
+  @@index([club_id], map: "idx_sportsmen_club_id")
+}
+
+model task_categories {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.VarChar(100)
+  training_tasks training_tasks[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model training_plan_groups {
+  plan_id        Int
+  group_id       Int
+  start_date     DateTime       @db.Date
+  end_date       DateTime       @db.Date
+  groups         groups         @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  training_plans training_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([plan_id, group_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model training_plan_users {
+  plan_id        Int
+  user_id        Int
+  start_date     DateTime       @db.Date
+  end_date       DateTime       @db.Date
+  training_plans training_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([plan_id, user_id])
+}
+
+model training_plans {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(100)
+  description          String?
+  author_id            Int
+  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?              @default(now()) @db.Timestamp(6)
+  training_plan_groups training_plan_groups[]
+  training_plan_users  training_plan_users[]
+  users                users                  @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  training_tasks       training_tasks[]
+}
+
+model training_task_reports {
+  id             Int               @id @default(autoincrement())
+  task_id        Int
+  author_id      Int
+  status         task_status_type? @default(TODO)
+  video_url      String?           @db.VarChar(255)
+  comment        String?
+  created_at     DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?         @default(now()) @db.Timestamp(6)
+  users          users             @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  training_tasks training_tasks    @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([task_id, author_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model training_tasks {
+  id                    Int                     @id @default(autoincrement())
+  task_order            Int
+  plan_id               Int
+  week_day              week_day_type?
+  category_id           Int?
+  title                 String                  @db.VarChar(100)
+  description           String?
+  duration_minutes      Int?
+  repeat_number         Int?                    @default(0)
+  sets_number           Int?                    @default(0)
+  video_url             String?                 @db.VarChar(255)
+  comment               String?
+  created_at            DateTime?               @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamp(6)
+  training_task_reports training_task_reports[]
+  task_categories       task_categories?        @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  training_plans        training_plans          @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  id                    Int                     @id @default(autoincrement())
+  email                 String                  @unique @db.VarChar(255)
+  password              String                  @db.VarChar(255)
+  name                  String                  @db.VarChar(60)
+  surname               String                  @db.VarChar(60)
+  gender                String?                 @db.VarChar(10)
+  role                  role_type               @default(SPORTSMAN)
+  phone_number          String?                 @db.VarChar(20)
+  birth_date            DateTime?               @db.Date
+  status                user_status_type        @default(VERIFYING)
+  created_at            DateTime                @default(now()) @db.Timestamp(6)
+  updated_at            DateTime                @default(now()) @db.Timestamp(6)
+  achievements          achievements[]
+  coaches               coaches?
+  groups                groups[]
+  health_reports        health_reports[]
+  sportsmen             sportsmen?
+  training_plan_users   training_plan_users[]
+  training_plans        training_plans[]
+  training_task_reports training_task_reports[]
+  users_groups          users_groups[]
+}
+
+model users_groups {
+  user_id    Int
+  group_id   Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  groups     groups    @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, group_id])
+}
+
+enum competition_type {
+  KATA
+  KUMITE
+  TEAM_KATA
+}
+
+enum karate_level_type {
+  KYU_10 @map("10_KYU")
+  KYU_9  @map("9_KYU")
+  KYU_8  @map("8_KYU")
+  KYU_7  @map("7_KYU")
+  KYU_6  @map("6_KYU")
+  KYU_5  @map("5_KYU")
+  KYU_4  @map("4_KYU")
+  KYU_3  @map("3_KYU")
+  KYU_2  @map("2_KYU")
+  KYU_1  @map("1_KYU")
+
+  DAN_1  @map("1_DAN")
+  DAN_2  @map("2_DAN")
+  DAN_3  @map("3_DAN")
+  DAN_4  @map("4_DAN")
+  DAN_5  @map("5_DAN")
+  DAN_6  @map("6_DAN")
+  DAN_7  @map("7_DAN")
+  DAN_8  @map("8_DAN")
+  DAN_9  @map("9_DAN")
+  DAN_10 @map("10_DAN")
+}
+
+enum role_type {
+  ADMIN
+  COACH
+  SPORTSMAN
+}
+
+enum sportsman_role_type {
+  JUST_TRAIN
+  RESERVE
+  NATIONAL_TEAM
+}
+
+enum task_status_type {
+  TODO
+  IN_PROGRESS
+  DONE
+  SKIPPED
+}
+
+enum user_status_type {
+  ACTIVE
+  PENDING
+  BLOCKED
+  VERIFYING
+}
+
+enum week_day_type {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
