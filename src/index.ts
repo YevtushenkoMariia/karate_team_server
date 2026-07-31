@@ -1,46 +1,27 @@
-import Fastify from "fastify";
-import { athleteRoutes as sportsmenRoutes } from "./routes/sportsmens";
-import { authRoutes } from "./routes/auth";
-import swagger from "@fastify/swagger";
-import swaggerUi from "@fastify/swagger-ui";
-import authPlugin from "./plugins/auth";
-import cors from "@fastify/cors";
 
+import 'dotenv/config';
+import { buildApp } from './app';
 
-export async function buildApp() {
-  const app = Fastify({
-    logger: true
-  });
+import { logger } from './utils/logger';  
 
-  await app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Karate Team API",
-        description: "API для управління спортсменами, тренерами та командами",
-        version: "1.0.0",
-      },
-      servers: [{ url: "http://localhost:4000", description: "Local server" }],
-    },
-  });
+const startServer = async () => {
+  const app = await buildApp(); 
+  const portValue = process.env.PORT || '4000'; 
+  
+  try {
+    await app.listen({
+      port: parseInt(portValue), host: '0.0.0.0'
+    });
+    console.log(`Server is running on http://localhost:${portValue}`);
 
-  await app.register(cors, {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    credentials: true,
-});
+    logger.info(`Server is running on http://localhost:${portValue}`);
+  
 
-  await app.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "list",
-      deepLinking: false,
-    },
-  });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 
-  await app.register(authPlugin);
+};
 
-  app.register(sportsmenRoutes, { prefix: "/api/athletes" });
-  app.register(authRoutes, { prefix: "/api/auth" });
-
-  return app;
-}
+startServer();
