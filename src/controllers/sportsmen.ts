@@ -3,6 +3,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { SportsmenService } from '../services/sportsmen';
 import { CreateSportsmenBody, SportsmenParams } from '../schemas/sportsmen';
 import { logger } from '../utils/logger';
+
 const service = new SportsmenService();
 
 export class SportsmenController {

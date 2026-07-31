@@ -239,6 +239,7 @@ model users {
   training_plans        training_plans[]
   training_task_reports training_task_reports[]
   users_groups          users_groups[]
+  email_verified        Boolean                        @default(false)
 }
 
 model users_groups {

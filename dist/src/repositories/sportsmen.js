@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AthleteRepository = void 0;
+exports.SportsmenRepository = void 0;
 const prisma_1 = require("../lib/prisma");
-class AthleteRepository {
+class SportsmenRepository {
     async findAll() {
         return prisma_1.prisma.sportsmen.findMany({});
     }
@@ -12,4 +12,4 @@ class AthleteRepository {
         });
     }
 }
-exports.AthleteRepository = AthleteRepository;
+exports.SportsmenRepository = SportsmenRepository;

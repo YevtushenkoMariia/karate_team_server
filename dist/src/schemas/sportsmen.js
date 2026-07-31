@@ -1,13 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AthleteParamsSchema = exports.CreateAthleteSchema = void 0;
+exports.SportsmenParamsSchema = exports.CreateSportsmenSchema = void 0;
 // src/schemas/athlete.schema.ts
 const typebox_1 = require("@sinclair/typebox");
-exports.CreateAthleteSchema = typebox_1.Type.Object({
-    name: typebox_1.Type.String(),
-    weightCategory: typebox_1.Type.String(),
-    teamId: typebox_1.Type.Number(),
+exports.CreateSportsmenSchema = typebox_1.Type.Object({
+    city: typebox_1.Type.String(),
+    club: typebox_1.Type.String(),
+    karate_level: typebox_1.Type.String(),
+    role_status: typebox_1.Type.String(),
+    coach: typebox_1.Type.String(),
+    user_id: typebox_1.Type.Number(),
 });
-exports.AthleteParamsSchema = typebox_1.Type.Object({
+exports.SportsmenParamsSchema = typebox_1.Type.Object({
     id: typebox_1.Type.String(),
 });
