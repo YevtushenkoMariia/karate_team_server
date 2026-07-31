@@ -26,7 +26,7 @@ async function buildApp() {
         },
     });
     await app.register(cors_1.default, {
-        origin: "http://localhost:5173",
+        origin: process.env.ORIGIN_FRONTEND_URL,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         credentials: true,
     });
