@@ -1,44 +1,21 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildApp = buildApp;
-const fastify_1 = __importDefault(require("fastify"));
-const sportsmens_1 = require("./routes/sportsmens");
-const auth_1 = require("./routes/auth");
-const swagger_1 = __importDefault(require("@fastify/swagger"));
-const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
-const auth_2 = __importDefault(require("./plugins/auth"));
-const cors_1 = __importDefault(require("@fastify/cors"));
-async function buildApp() {
-    const app = (0, fastify_1.default)({
-        logger: true
-    });
-    await app.register(swagger_1.default, {
-        openapi: {
-            info: {
-                title: "Karate Team API",
-                description: "API для управління спортсменами, тренерами та командами",
-                version: "1.0.0",
-            },
-            servers: [{ url: "http://localhost:4000", description: "Local server" }],
-        },
-    });
-    await app.register(cors_1.default, {
-        origin: process.env.ORIGIN_FRONTEND_URL,
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        credentials: true,
-    });
-    await app.register(swagger_ui_1.default, {
-        routePrefix: "/docs",
-        uiConfig: {
-            docExpansion: "list",
-            deepLinking: false,
-        },
-    });
-    await app.register(auth_2.default);
-    app.register(sportsmens_1.athleteRoutes, { prefix: "/api/athletes" });
-    app.register(auth_1.authRoutes, { prefix: "/api/auth" });
-    return app;
-}
+require("dotenv/config");
+const app_1 = require("./app");
+const logger_1 = require("./utils/logger");
+const startServer = async () => {
+    const app = await (0, app_1.buildApp)();
+    const portValue = process.env.PORT || '4000';
+    try {
+        await app.listen({
+            port: parseInt(portValue), host: '0.0.0.0'
+        });
+        console.log(`Server is running on http://localhost:${portValue}`);
+        logger_1.logger.info(`Server is running on http://localhost:${portValue}`);
+    }
+    catch (err) {
+        app.log.error(err);
+        process.exit(1);
+    }
+};
+startServer();
