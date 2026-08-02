@@ -260,6 +260,7 @@ enum competition_type {
 }
 
 enum karate_level_type {
+  KYU_0 @map("0_KYU")
   KYU_10 @map("10_KYU")
   KYU_9  @map("9_KYU")
   KYU_8  @map("8_KYU")

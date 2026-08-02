@@ -1,22 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRoutes = userRoutes;
-const user_1 = require("../schemas/user");
-const user_2 = require("../controllers/user");
-const controller = new user_2.UserController();
+const user_1 = require("../controllers/user");
+const user_2 = require("../schemas/user");
+const client_1 = require("../../generated/prisma/client");
+const auth_1 = require("../plugins/auth");
+const controller = new user_1.UserController();
 async function userRoutes(fastify) {
-    fastify.post('/', {
+    fastify.get("/profile", {
         schema: {
-            body: user_1.CreateUserSchema
+            querystring: user_2.UserProfileSchema,
         },
-        handler: controller.createUser,
+        preHandler: [
+            fastify.authenticate,
+            (0, auth_1.authorize)(client_1.role_type.ADMIN, client_1.role_type.COACH, client_1.role_type.SPORTSMAN),
+        ],
+        handler: controller.getUserProfile,
     });
-    fastify.get('/:id', {
+    fastify.put("/profile-update", {
         schema: {
-            params: {
-                id: { type: 'string' }
-            }
+            body: user_2.UpdateUserProfileSchema,
+            security: [{ bearerAuth: [] }],
         },
-        handler: controller.getUserById,
+        preHandler: [
+            fastify.authenticate,
+            (0, auth_1.authorize)(client_1.role_type.ADMIN, client_1.role_type.COACH, client_1.role_type.SPORTSMAN),
+        ],
+        handler: controller.updateUserProfile,
     });
 }

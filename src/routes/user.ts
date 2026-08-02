@@ -1,29 +1,32 @@
-import { FastifyInstance } from 'fastify';
-import { CreateUserSchema } from '../schemas/user';
-import { UserController } from '../controllers/user';
+import { FastifyInstance } from "fastify";
+import { UserController } from "../controllers/user";
+import { UpdateUserProfileSchema, UserProfileSchema } from "../schemas/user";
+import { role_type } from "../../generated/prisma/client";
+import { authorize } from "../plugins/auth";
 
 const controller = new UserController();
 
 export async function userRoutes(fastify: FastifyInstance) {
+  fastify.get("/profile", {
+    schema: {
+      querystring: UserProfileSchema,
+    },
+    preHandler: [
+      fastify.authenticate,
+      authorize(role_type.ADMIN, role_type.COACH, role_type.SPORTSMAN),
+    ],
+    handler: controller.getUserProfile,
+  });
 
-    fastify.post('/', 
-        {
-            schema: {
-                body: CreateUserSchema
-            },
-            handler: controller.createUser,
-        }
-    )
-
-    fastify.get('/:id', {
-        schema: {
-            params: {   
-                id: { type: 'string' }
-            }
-        },
-        handler: controller.getUserById,
-    });
-
-
-
+  fastify.put("/profile-update", {
+    schema: {
+      body: UpdateUserProfileSchema,
+      security: [{ bearerAuth: [] }],
+    },
+    preHandler: [
+      fastify.authenticate,
+      authorize(role_type.ADMIN, role_type.COACH, role_type.SPORTSMAN),
+    ],
+    handler: controller.updateUserProfile,
+  });
 }

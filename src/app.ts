@@ -5,6 +5,8 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import authPlugin from "./plugins/auth";
 import cors from "@fastify/cors";
+import { userRoutes } from "./routes/user";
+import { locationRoutes } from "./routes/location";
 
 
 export async function buildApp() {
@@ -20,6 +22,15 @@ export async function buildApp() {
         version: "1.0.0",
       },
       servers: [{ url: "http://localhost:4000", description: "Local server" }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+          },
+        },
+      },
     },
   });
 
@@ -39,8 +50,10 @@ export async function buildApp() {
 
   await app.register(authPlugin);
 
-  app.register(sportsmenRoutes, { prefix: "/api/athletes" });
+  // app.register(sportsmenRoutes, { prefix: "/api/athletes" });
   app.register(authRoutes, { prefix: "/api/auth" });
+  app.register(userRoutes, { prefix: "/api/user" });
+  app.register(locationRoutes, { prefix: "/api/location" });
 
   return app;
 }

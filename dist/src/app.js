@@ -5,12 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildApp = buildApp;
 const fastify_1 = __importDefault(require("fastify"));
-const sportsmens_1 = require("./routes/sportsmens");
 const auth_1 = require("./routes/auth");
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
 const auth_2 = __importDefault(require("./plugins/auth"));
 const cors_1 = __importDefault(require("@fastify/cors"));
+const user_1 = require("./routes/user");
+const location_1 = require("./routes/location");
 async function buildApp() {
     const app = (0, fastify_1.default)({
         logger: true
@@ -23,10 +24,19 @@ async function buildApp() {
                 version: "1.0.0",
             },
             servers: [{ url: "http://localhost:4000", description: "Local server" }],
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: "http",
+                        scheme: "bearer",
+                        bearerFormat: "JWT",
+                    },
+                },
+            },
         },
     });
     await app.register(cors_1.default, {
-        origin: "http://localhost:5173",
+        origin: process.env.ORIGIN_FRONTEND_URL,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         credentials: true,
     });
@@ -38,7 +48,9 @@ async function buildApp() {
         },
     });
     await app.register(auth_2.default);
-    app.register(sportsmens_1.athleteRoutes, { prefix: "/api/athletes" });
+    // app.register(sportsmenRoutes, { prefix: "/api/athletes" });
     app.register(auth_1.authRoutes, { prefix: "/api/auth" });
+    app.register(user_1.userRoutes, { prefix: "/api/user" });
+    app.register(location_1.locationRoutes, { prefix: "/api/location" });
     return app;
 }

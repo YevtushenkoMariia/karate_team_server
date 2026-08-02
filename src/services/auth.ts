@@ -18,7 +18,7 @@ export class AuthService {
       };
     }
     
-    const user = await repository.checkUserExists(data.email);
+    const user = await repository.IsUserExistsEmail(data.email);
     if (user) {
       logger.error("User already exists");
       return {
@@ -61,7 +61,7 @@ export class AuthService {
   }
 
   async loginUser(data: LoginBody) {
-    const user = await repository.checkUserExists(data.email);
+    const user = await repository.IsUserExistsEmail(data.email);
     if (!user) {
      logger.error("User not found");
       return {
