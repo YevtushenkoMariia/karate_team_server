@@ -5,13 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildApp = buildApp;
 const fastify_1 = __importDefault(require("fastify"));
-const auth_1 = require("./routes/auth");
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
-const auth_2 = __importDefault(require("./plugins/auth"));
+const auth_1 = __importDefault(require("./plugins/auth"));
 const cors_1 = __importDefault(require("@fastify/cors"));
-const user_1 = require("./routes/user");
-const location_1 = require("./routes/location");
+const router_1 = require("./router");
 async function buildApp() {
     const app = (0, fastify_1.default)({
         logger: true
@@ -47,10 +45,7 @@ async function buildApp() {
             deepLinking: false,
         },
     });
-    await app.register(auth_2.default);
-    // app.register(sportsmenRoutes, { prefix: "/api/athletes" });
-    app.register(auth_1.authRoutes, { prefix: "/api/auth" });
-    app.register(user_1.userRoutes, { prefix: "/api/user" });
-    app.register(location_1.locationRoutes, { prefix: "/api/location" });
+    await app.register(auth_1.default);
+    (0, router_1.registerRoutes)(app);
     return app;
 }

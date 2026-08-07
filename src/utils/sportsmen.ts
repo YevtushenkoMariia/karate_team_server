@@ -4,6 +4,7 @@ import {
 } from "../../generated/prisma/client";
 
 const KARATE_LEVEL_DB_TO_ENUM: Record<string, karate_level_type> = {
+  "0_KYU": karate_level_type.KYU_1,
   "10_KYU": karate_level_type.KYU_10,
   "9_KYU": karate_level_type.KYU_9,
   "8_KYU": karate_level_type.KYU_8,
@@ -14,6 +15,7 @@ const KARATE_LEVEL_DB_TO_ENUM: Record<string, karate_level_type> = {
   "3_KYU": karate_level_type.KYU_3,
   "2_KYU": karate_level_type.KYU_2,
   "1_KYU": karate_level_type.KYU_1,
+
   "1_DAN": karate_level_type.DAN_1,
   "2_DAN": karate_level_type.DAN_2,
   "3_DAN": karate_level_type.DAN_3,

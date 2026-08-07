@@ -5,7 +5,7 @@ const sportsmen_1 = require("../services/sportsmen");
 const logger_1 = require("../utils/logger");
 const service = new sportsmen_1.SportsmenService();
 class SportsmenController {
-    async getAllSportsmens(request, reply) {
+    async getAllSportsmens(reply) {
         const athletes = await service.getAllSportsmens();
         return reply.send(athletes);
     }

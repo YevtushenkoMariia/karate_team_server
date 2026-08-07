@@ -48,7 +48,9 @@ async function authPlugin(fastify) {
         const token = header.slice("Bearer ".length);
         const secret = process.env.JWT_SECRET;
         if (!secret) {
-            return reply.status(500).send({ message: "JWT secret is not configured" });
+            return reply
+                .status(500)
+                .send({ message: "JWT secret is not configured" });
         }
         try {
             request.user = jwt.verify(token, secret);

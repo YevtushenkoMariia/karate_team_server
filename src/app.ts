@@ -1,12 +1,11 @@
 import Fastify from "fastify";
 import { athleteRoutes as sportsmenRoutes } from "./routes/sportsmens";
-import { authRoutes } from "./routes/auth";
+
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import authPlugin from "./plugins/auth";
 import cors from "@fastify/cors";
-import { userRoutes } from "./routes/user";
-import { locationRoutes } from "./routes/location";
+import {registerRoutes} from "./router"
 
 
 export async function buildApp() {
@@ -50,10 +49,7 @@ export async function buildApp() {
 
   await app.register(authPlugin);
 
-  // app.register(sportsmenRoutes, { prefix: "/api/athletes" });
-  app.register(authRoutes, { prefix: "/api/auth" });
-  app.register(userRoutes, { prefix: "/api/user" });
-  app.register(locationRoutes, { prefix: "/api/location" });
+  registerRoutes(app);
 
   return app;
 }

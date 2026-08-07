@@ -41,25 +41,18 @@ const user_1 = require("../repositories/user");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jwt = __importStar(require("jsonwebtoken"));
 const logger_1 = require("../utils/logger");
+const error_1 = require("../types/error");
 const repository = new user_1.UserRepository();
 class AuthService {
     async registerUser(data) {
         if (data.password !== data.confirmPassword) {
             logger_1.logger.error("Passwords do not matchs");
-            return {
-                success: false,
-                message: "Passwords do not matchs",
-                code: 400,
-            };
+            throw new error_1.AppError("Passwords do not matchs", 400);
         }
         const user = await repository.IsUserExistsEmail(data.email);
         if (user) {
             logger_1.logger.error("User already exists");
-            return {
-                success: false,
-                message: "User already exists",
-                code: 400,
-            };
+            throw new error_1.AppError("User already exists", 400);
         }
         const hashedPassword = await bcryptjs_1.default.hash(data.password, 12);
         const newUser = await repository.createUser({
@@ -88,20 +81,12 @@ class AuthService {
         const user = await repository.IsUserExistsEmail(data.email);
         if (!user) {
             logger_1.logger.error("User not found");
-            return {
-                success: false,
-                message: "User not found",
-                code: 404,
-            };
+            throw new error_1.AppError("User not found", 404);
         }
         const isPasswordValid = await bcryptjs_1.default.compare(data.password, user.password);
         if (!isPasswordValid) {
             logger_1.logger.error("Invalid password");
-            return {
-                success: false,
-                message: "Invalid password",
-                code: 401,
-            };
+            throw new error_1.AppError("Invalid password", 401);
         }
         const token = jwt.sign({
             id: user.id,

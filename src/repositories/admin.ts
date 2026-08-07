@@ -1,0 +1,23 @@
+
+export class AdminRepository {
+  
+
+   async buildAdminProfile(user: any) {
+    if (!user || user.role !== "ADMIN") {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      surname: user.surname,
+      role: user.role,
+      email: user.email,
+      gender: user.gender,
+      phone_number: user.phone_number,
+      birth_date: user.birth_date,
+    };
+  }
+}
+
+export const adminRepository = new AdminRepository();

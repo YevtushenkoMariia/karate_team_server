@@ -3,31 +3,25 @@ import { AuthBody, LoginBody } from "../schemas/auth";
 import bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
 import { logger } from "../utils/logger";
+import {AppError} from "../types/error"
 
 const repository = new UserRepository();
 
 export class AuthService {
-
   async registerUser(data: AuthBody) {
-    if(data.password !== data.confirmPassword){
+    if (data.password !== data.confirmPassword) {
       logger.error("Passwords do not matchs");
-      return {
-        success: false,
-        message: "Passwords do not matchs",
-        code: 400,
-      };
+
+      throw new AppError("Passwords do not matchs", 400);
     }
-    
+
     const user = await repository.IsUserExistsEmail(data.email);
     if (user) {
       logger.error("User already exists");
-      return {
-        success: false,
-        message: "User already exists",
-        code: 400,
-      };
-    }
 
+      throw new AppError("User already exists", 400);
+      
+    }
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
@@ -63,22 +57,14 @@ export class AuthService {
   async loginUser(data: LoginBody) {
     const user = await repository.IsUserExistsEmail(data.email);
     if (!user) {
-     logger.error("User not found");
-      return {
-        success: false,
-        message: "User not found",
-        code: 404,
-      };
+      logger.error("User not found");
+      throw new AppError( "User not found", 404);
     }
 
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
     if (!isPasswordValid) {
       logger.error("Invalid password");
-      return {
-        success: false,
-        message: "Invalid password",
-        code: 401,
-      };
+        throw new AppError( "Invalid password", 401);
     }
 
     const token = jwt.sign(
@@ -93,7 +79,7 @@ export class AuthService {
 
     logger.info("User logged in successfully");
     const { password: _, ...userWithoutPassword } = user;
-    
+
     return {
       success: true,
       message: "User logged in successfully",

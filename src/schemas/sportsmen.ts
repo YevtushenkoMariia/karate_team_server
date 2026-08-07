@@ -2,8 +2,6 @@
 import { Type, Static } from '@sinclair/typebox';
 
 
-
-
 export const CreateSportsmenSchema = Type.Object({
   city: Type.String(),
   club: Type.String(),

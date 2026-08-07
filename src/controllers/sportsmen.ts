@@ -8,7 +8,6 @@ const service = new SportsmenService();
 
 export class SportsmenController {
   async getAllSportsmens(
-    request: FastifyRequest,
     reply: FastifyReply) {
     const athletes = await service.getAllSportsmens();
     return reply.send(athletes);
