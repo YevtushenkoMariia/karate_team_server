@@ -1,12 +1,12 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { CreateUserBody, ProileBody, UpdateUserBody } from "../schemas/user";
+import { CreateUserBody, ProfileBody, UpdateUserBody } from "../schemas/user";
 import { UsersService } from "../services/users";
 
 const service = new UsersService();
 
 export class UserController {
   async getUserProfile(
-    request: FastifyRequest<{ Querystring: ProileBody }>,
+    request: FastifyRequest<{ Querystring: ProfileBody }>,
     reply: FastifyReply,
   ) {
     try {

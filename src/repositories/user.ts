@@ -68,12 +68,19 @@ export class UserRepository {
   }
 
   async IsUserExistsEmail(email: string) {
+    if (!email) {
+      return null;
+    }
+
     return prisma.users.findUnique({
       where: { email: email },
     });
   }
 
   async IsUserExistsId(id: number) {
+    if (!id) {
+      return null;
+    }
     return prisma.users.findUnique({
       where: { id: id },
     });

@@ -38,5 +38,5 @@ export const UpdateUserProfileSchema = Type.Object({
 
 export type CreateUserBody = Static<typeof CreateUserSchema>;
 export type UserParams = Static<typeof UserParamsSchema>;
-export type ProileBody = Static<typeof UserProfileSchema>;
+export type ProfileBody = Static<typeof UserProfileSchema>;
 export type UpdateUserBody = Static<typeof UpdateUserProfileSchema>;

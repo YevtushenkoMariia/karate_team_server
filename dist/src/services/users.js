@@ -20,7 +20,8 @@ class UsersService {
         if (String(userRole) !== body.role) {
             throw new error_1.AppError("User role does not match", 403);
         }
-        return repository.getUserProfileById(userId);
+        const userProfile = repository.getUserProfileById(userId);
+        return userProfile;
     }
     async updateUserProfile(authUser, body) {
         const userId = authUser.id;

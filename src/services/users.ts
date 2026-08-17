@@ -1,6 +1,6 @@
 import { role_type } from "../../generated/prisma/client";
 import { JwtUser } from "../plugins/auth";
-import { ProileBody, UpdateUserBody } from "../schemas/user";
+import { ProfileBody, UpdateUserBody } from "../schemas/user";
 import { UserRepository } from "../repositories/user";
 import { AppError } from "../types/error";
 import { coachRepository } from "../repositories/coach";
@@ -11,7 +11,7 @@ import { locationRepository } from "../repositories/locations";
 const repository = new UserRepository();
 
 export class UsersService {
-  async getUserProfile(body: ProileBody) {
+  async getUserProfile(body: ProfileBody) {
     const userId = Number(body.userId);
 
     const isUserExists = await repository.IsUserExistsId(userId);
@@ -25,7 +25,9 @@ export class UsersService {
       throw new AppError("User role does not match", 403);
     }
 
-    return repository.getUserProfileById(userId);
+    const userProfile = repository.getUserProfileById(userId);
+
+    return userProfile;
   }
 
   async updateUserProfile(authUser: JwtUser, body: UpdateUserBody) {
