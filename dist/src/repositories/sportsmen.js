@@ -39,9 +39,9 @@ class SportsmenRepository {
     async findAll() {
         return prisma_1.prisma.sportsmen.findMany({});
     }
-    async findById(id) {
+    async findById(sportsmenId) {
         return prisma_1.prisma.sportsmen.findUnique({
-            where: { user_id: id },
+            where: { user_id: sportsmenId },
         });
     }
 }

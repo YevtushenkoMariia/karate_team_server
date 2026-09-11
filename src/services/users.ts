@@ -12,7 +12,7 @@ const repository = new UserRepository();
 
 export class UsersService {
   async getUserProfile(body: ProfileBody) {
-    const userId = Number(body.userId);
+    const userId = body.userId;
 
     const isUserExists = await repository.IsUserExistsId(userId);
     const userRole = await repository.getUserRoleById(userId);
@@ -58,12 +58,12 @@ export class UsersService {
     const karateLevel = toKarateLevel(body.karate_level);
     const sportsmanStatus = toSportsmanStatus(body.status);
 
-    let cityId: number | null = null;
+    let cityId: string | null = null;
     if (body.city?.trim()) {
       cityId = await locationRepository.findOrCreateCity(body.city.trim());
     }
 
-    let clubId: number | null = null;
+    let clubId: string | null = null;
     if (body.club?.trim()) {
       clubId = await locationRepository.findOrCreateClub(
         body.club.trim(),

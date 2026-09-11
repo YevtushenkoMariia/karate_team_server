@@ -90,13 +90,38 @@ export class GroupsController {
 
       const result = await service.joinGroup({
         userId,
-        code: request.body.code,
+        code: request.body.groupCode,
       });
       return reply.status(200).send(result);
-      
     } catch (error: any) {
       return reply.status(error.statusCode || 400).send({
         message: error.message || "Failed to join group",
+        error: error.message,
+      });
+    }
+  }
+
+  async getGroupMembers(
+    request: FastifyRequest<{
+      Params: GroupIdParams;
+    }>,
+    reply: FastifyReply,
+  ) {
+    try {
+      const { groupId, userId } = request.params;
+
+      if (!userId) {
+        return reply.status(400).send({
+          message: "User ID is required",
+        });
+      }
+
+      const result = await service.getGroupMembers({userId, groupId});
+
+      return reply.status(200).send(result);
+    } catch (error: any) {
+      return reply.status(error.statusCode || 400).send({
+        message: error.message || "Failed getting all group members",
         error: error.message,
       });
     }

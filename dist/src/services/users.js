@@ -11,7 +11,7 @@ const locations_1 = require("../repositories/locations");
 const repository = new user_1.UserRepository();
 class UsersService {
     async getUserProfile(body) {
-        const userId = Number(body.userId);
+        const userId = body.userId;
         const isUserExists = await repository.IsUserExistsId(userId);
         const userRole = await repository.getUserRoleById(userId);
         if (!isUserExists) {

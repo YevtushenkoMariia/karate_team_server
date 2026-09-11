@@ -9,7 +9,7 @@ export class SportsmenService {
     return repository.findAll();
   }
 
-  async getSportsmenById(id: number) {
+  async getSportsmenById(id: string) {
     return repository.findById(id);
   }
   

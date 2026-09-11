@@ -10,7 +10,7 @@ class SportsmenController {
         return reply.send(athletes);
     }
     async getSportsmenById(request, reply) {
-        const athlete = await service.getSportsmenById(Number(request.params.id));
+        const athlete = await service.getSportsmenById(request.params.id);
         if (!athlete) {
             logger_1.logger.warn(`Athlete with ID ${request.params.id} not found`);
             return reply.status(404).send({ message: 'Не знайдено' });

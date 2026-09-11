@@ -19,6 +19,7 @@ class AuthController {
     async loginUser(request, reply) {
         try {
             const result = await service.loginUser(request.body);
+            console.log(result);
             return reply.status(200).send(result);
         }
         catch (error) {

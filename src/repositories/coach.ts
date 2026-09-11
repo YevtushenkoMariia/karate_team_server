@@ -1,7 +1,8 @@
+import { UUID } from "node:crypto";
 import { prisma } from "../lib/prisma";
 
 export class CoachRepository {
-  async upsertCoach(userId: number, coachData: object) {
+  async upsertCoach(userId: string, coachData: object) {
     await prisma.coaches.upsert({
       where: {
         user_id: userId,

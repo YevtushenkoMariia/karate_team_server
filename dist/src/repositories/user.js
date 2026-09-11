@@ -46,25 +46,31 @@ class UserRepository {
         }
     }
     async IsUserExistsEmail(email) {
+        if (!email) {
+            return null;
+        }
         return prisma_1.prisma.users.findUnique({
             where: { email: email },
         });
     }
-    async IsUserExistsId(id) {
+    async IsUserExistsId(userId) {
+        if (!userId) {
+            return null;
+        }
         return prisma_1.prisma.users.findUnique({
-            where: { id: id },
+            where: { id: userId },
         });
     }
-    async getUserRoleById(id) {
+    async getUserRoleById(userId) {
         const user = await prisma_1.prisma.users.findUnique({
-            where: { id: id },
+            where: { id: userId },
             select: { role: true },
         });
         return user?.role;
     }
-    async getUserWithProfileRelations(id) {
+    async getUserWithProfileRelations(userId) {
         return prisma_1.prisma.users.findUnique({
-            where: { id },
+            where: { id: userId },
             select: {
                 id: true,
                 name: true,
@@ -129,8 +135,8 @@ class UserRepository {
             },
         });
     }
-    async getUserProfileById(id) {
-        const user = await this.getUserWithProfileRelations(id);
+    async getUserProfileById(userId) {
+        const user = await this.getUserWithProfileRelations(userId);
         if (!user) {
             return null;
         }

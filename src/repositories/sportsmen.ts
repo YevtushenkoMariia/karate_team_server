@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 
 export class SportsmenRepository {
-  async upsertSportsmen(userId: number, sportsmenData: object) {
+  async upsertSportsmen(userId: string, sportsmenData: object) {
     await prisma.sportsmen.upsert({
       where: {
         user_id: userId,
@@ -44,9 +44,9 @@ export class SportsmenRepository {
     });
   }
 
-  async findById(id: number) {
+  async findById(sportsmenId: string) {
     return prisma.sportsmen.findUnique({
-      where: { user_id: id },
+      where: { user_id: sportsmenId },
     });
   }
 }

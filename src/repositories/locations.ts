@@ -42,7 +42,7 @@ export class LocationRepository {
 
    async findOrCreateClub(
       clubName: string,
-      cityId: number | null,
+      cityId: string | null,
     ) {
       const existingClub = await prisma.clubs.findFirst({
         where: { name: { equals: clubName, mode: "insensitive" } },

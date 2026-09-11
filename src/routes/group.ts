@@ -49,4 +49,18 @@ export async function groupsRoutes(fastify: FastifyInstance) {
         ],
         handler: controller.getGroup,
     });
+
+    fastify.get("/:groupId/members", {
+        schema: {
+            params: GroupIdParams, UserIdParams
+        },
+        preHandler: [
+            fastify.authenticate,
+            authorize(role_type.ADMIN, role_type.COACH, role_type.SPORTSMAN),
+        ],
+        handler: controller.getGroupMembers,
+
+        
+
+    });
 }

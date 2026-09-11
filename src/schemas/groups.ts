@@ -19,7 +19,7 @@ export const GroupIdParams = Type.Object({
 });
 
 export const JoinGroupSchema = Type.Object({
-    code: Type.String(),
+    groupCode: Type.String(),
 });
 
 export type GroupBody = Static<typeof GroupBody>;

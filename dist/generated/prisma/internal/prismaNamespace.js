@@ -132,63 +132,61 @@ exports.TransactionIsolationLevel = runtime.makeStrictEnum({
     Serializable: 'Serializable'
 });
 exports.AchievementsScalarFieldEnum = {
-    id: 'id',
-    user_id: 'user_id',
-    championship_id: 'championship_id',
     category: 'category',
     place: 'place',
     competition_type: 'competition_type',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    id: 'id',
+    user_id: 'user_id',
+    championship_id: 'championship_id'
 };
 exports.ChampionshipsScalarFieldEnum = {
-    id: 'id',
     name: 'name',
-    city_id: 'city_id',
     start_date: 'start_date',
-    end_date: 'end_date'
+    end_date: 'end_date',
+    id: 'id',
+    city_id: 'city_id'
 };
 exports.CitiesScalarFieldEnum = {
-    id: 'id',
     name: 'name',
+    id: 'id',
     country_id: 'country_id'
 };
 exports.ClubsScalarFieldEnum = {
-    id: 'id',
     name: 'name',
-    city_id: 'city_id',
-    created_at: 'created_at'
+    created_at: 'created_at',
+    id: 'id',
+    city_id: 'city_id'
 };
 exports.Coach_sportsmanScalarFieldEnum = {
     coach_id: 'coach_id',
     sportsman_id: 'sportsman_id'
 };
 exports.CoachesScalarFieldEnum = {
-    user_id: 'user_id',
     karate_level: 'karate_level',
-    city_id: 'city_id',
-    club_id: 'club_id',
     position: 'position',
     specialization: 'specialization',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    user_id: 'user_id',
+    city_id: 'city_id',
+    club_id: 'club_id'
 };
 exports.CountriesScalarFieldEnum = {
-    id: 'id',
-    name: 'name'
+    name: 'name',
+    id: 'id'
 };
 exports.GroupsScalarFieldEnum = {
-    id: 'id',
-    author_id: 'author_id',
     name: 'name',
     description: 'description',
     code: 'code',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    id: 'id',
+    author_id: 'author_id'
 };
 exports.Health_reportsScalarFieldEnum = {
-    id: 'id',
-    user_id: 'user_id',
     start_date: 'start_date',
     end_date: 'end_date',
     physical_state_grade: 'physical_state_grade',
@@ -196,57 +194,56 @@ exports.Health_reportsScalarFieldEnum = {
     emotional_state_grade: 'emotional_state_grade',
     emotional_state_comment: 'emotional_state_comment',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    id: 'id',
+    user_id: 'user_id'
 };
 exports.SportsmenScalarFieldEnum = {
-    user_id: 'user_id',
     karate_level: 'karate_level',
-    city_id: 'city_id',
-    club_id: 'club_id',
     status: 'status',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    user_id: 'user_id',
+    city_id: 'city_id',
+    club_id: 'club_id'
 };
 exports.Task_categoriesScalarFieldEnum = {
-    id: 'id',
-    name: 'name'
+    name: 'name',
+    id: 'id'
 };
 exports.Training_plan_groupsScalarFieldEnum = {
-    plan_id: 'plan_id',
-    group_id: 'group_id',
     start_date: 'start_date',
-    end_date: 'end_date'
+    end_date: 'end_date',
+    plan_id: 'plan_id',
+    group_id: 'group_id'
 };
 exports.Training_plan_usersScalarFieldEnum = {
-    plan_id: 'plan_id',
-    user_id: 'user_id',
     start_date: 'start_date',
-    end_date: 'end_date'
+    end_date: 'end_date',
+    plan_id: 'plan_id',
+    user_id: 'user_id'
 };
 exports.Training_plansScalarFieldEnum = {
-    id: 'id',
     name: 'name',
     description: 'description',
-    author_id: 'author_id',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    id: 'id',
+    author_id: 'author_id'
 };
 exports.Training_task_reportsScalarFieldEnum = {
-    id: 'id',
-    task_id: 'task_id',
-    author_id: 'author_id',
     status: 'status',
     video_url: 'video_url',
     comment: 'comment',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    id: 'id',
+    task_id: 'task_id',
+    author_id: 'author_id'
 };
 exports.Training_tasksScalarFieldEnum = {
-    id: 'id',
     task_order: 'task_order',
-    plan_id: 'plan_id',
     week_day: 'week_day',
-    category_id: 'category_id',
     title: 'title',
     description: 'description',
     duration_minutes: 'duration_minutes',
@@ -255,10 +252,12 @@ exports.Training_tasksScalarFieldEnum = {
     video_url: 'video_url',
     comment: 'comment',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    id: 'id',
+    plan_id: 'plan_id',
+    category_id: 'category_id'
 };
 exports.UsersScalarFieldEnum = {
-    id: 'id',
     email: 'email',
     password: 'password',
     name: 'name',
@@ -269,13 +268,15 @@ exports.UsersScalarFieldEnum = {
     birth_date: 'birth_date',
     status: 'status',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    email_verified: 'email_verified',
+    id: 'id'
 };
 exports.Users_groupsScalarFieldEnum = {
-    user_id: 'user_id',
-    group_id: 'group_id',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    user_id: 'user_id',
+    group_id: 'group_id'
 };
 exports.SortOrder = {
     asc: 'asc',

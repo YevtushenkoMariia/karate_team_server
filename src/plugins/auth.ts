@@ -4,7 +4,7 @@ import * as jwt from "jsonwebtoken";
 import { role_type } from "../../generated/prisma/client";
 
 export type JwtUser = {
-  id: number;
+  id: string;
   email: string;
   role: role_type;
 };

@@ -48,7 +48,7 @@ export class UserRepository {
   }
 
   async updateUserProfile(data: {
-    userId: number;
+    userId: string;
     role: role_type;
     name?: string;
     surname?: string;
@@ -77,26 +77,26 @@ export class UserRepository {
     });
   }
 
-  async IsUserExistsId(id: number) {
-    if (!id) {
+  async IsUserExistsId(userId: string) {
+    if (!userId) {
       return null;
     }
     return prisma.users.findUnique({
-      where: { id: id },
+      where: { id: userId },
     });
   }
 
-  async getUserRoleById(id: number) {
+  async getUserRoleById(userId: string) {
     const user = await prisma.users.findUnique({
-      where: { id: id },
+      where: { id: userId },
       select: { role: true },
     });
     return user?.role;
   }
 
-  private async getUserWithProfileRelations(id: number) {
+  private async getUserWithProfileRelations(userId: string) {
     return prisma.users.findUnique({
-      where: { id },
+      where: { id: userId },
       select: {
         id: true,
         name: true,
@@ -162,8 +162,8 @@ export class UserRepository {
     });
   }
 
-  async getUserProfileById(id: number) {
-    const user = await this.getUserWithProfileRelations(id);
+  async getUserProfileById(userId: string) {
+    const user = await this.getUserWithProfileRelations(userId);
 
     if (!user) {
       return null;

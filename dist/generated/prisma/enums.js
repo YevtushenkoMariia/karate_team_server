@@ -35,7 +35,8 @@ exports.karate_level_type = {
     DAN_7: 'DAN_7',
     DAN_8: 'DAN_8',
     DAN_9: 'DAN_9',
-    DAN_10: 'DAN_10'
+    DAN_10: 'DAN_10',
+    KYU_0: 'KYU_0'
 };
 exports.role_type = {
     ADMIN: 'ADMIN',

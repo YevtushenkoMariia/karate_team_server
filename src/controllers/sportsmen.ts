@@ -17,7 +17,7 @@ export class SportsmenController {
     request: FastifyRequest<{ Params: SportsmenParams }>,
     reply: FastifyReply
   ) {
-    const athlete = await service.getSportsmenById(Number(request.params.id));
+    const athlete = await service.getSportsmenById(request.params.id);
     if (!athlete) {
       logger.warn(`Athlete with ID ${request.params.id} not found`);
       return reply.status(404).send({ message: 'Не знайдено' });
