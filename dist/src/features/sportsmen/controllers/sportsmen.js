@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SportsmenController = void 0;
+const services_1 = require("../services");
+const utils_1 = require("../../../shared/utils");
+const service = new services_1.SportsmenService();
+class SportsmenController {
+    async getAllSportsmens(reply) {
+        const athletes = await service.getAllSportsmens();
+        return reply.send(athletes);
+    }
+    async getSportsmenById(request, reply) {
+        const athlete = await service.getSportsmenById(request.params.id);
+        if (!athlete) {
+            utils_1.logger.warn(`Athlete with ID ${request.params.id} not found`);
+            return reply.status(404).send({ message: 'Не знайдено' });
+        }
+        return reply.send(athlete);
+    }
+    async createSportsmen(request, reply) {
+    }
+}
+exports.SportsmenController = SportsmenController;

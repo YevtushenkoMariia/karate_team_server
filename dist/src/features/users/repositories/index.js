@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.adminRepository = exports.AdminRepository = exports.coachRepository = exports.CoachRepository = exports.UserRepository = void 0;
+var user_1 = require("./user");
+Object.defineProperty(exports, "UserRepository", { enumerable: true, get: function () { return user_1.UserRepository; } });
+var coach_1 = require("./coach");
+Object.defineProperty(exports, "CoachRepository", { enumerable: true, get: function () { return coach_1.CoachRepository; } });
+Object.defineProperty(exports, "coachRepository", { enumerable: true, get: function () { return coach_1.coachRepository; } });
+var admin_1 = require("./admin");
+Object.defineProperty(exports, "AdminRepository", { enumerable: true, get: function () { return admin_1.AdminRepository; } });
+Object.defineProperty(exports, "adminRepository", { enumerable: true, get: function () { return admin_1.adminRepository; } });

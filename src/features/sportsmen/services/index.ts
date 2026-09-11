@@ -1,0 +1,1 @@
+export { SportsmenService } from "./sportsmen";

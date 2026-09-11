@@ -1,11 +1,10 @@
-
-import { userRoutes } from "./routes/user";
-import { locationRoutes } from "./routes/location";
 import { FastifyInstance } from "fastify";
-import { authRoutes } from "./routes/auth";
-import { groupsRoutes } from "./routes/group";
-
-
+import {
+  authRoutes,
+  userRoutes,
+  locationRoutes,
+  groupsRoutes,
+} from "./features";
 
 export function registerRoutes(app: FastifyInstance){
       app.register(authRoutes, { prefix: "/api/auth" });

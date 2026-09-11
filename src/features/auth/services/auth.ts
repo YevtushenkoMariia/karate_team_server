@@ -1,0 +1,91 @@
+import { UserRepository } from "../../users/repositories";
+import { AuthBody, LoginBody } from "../types";
+import bcrypt from "bcryptjs";
+import * as jwt from "jsonwebtoken";
+import { logger } from "../../../shared/utils";
+import { AppError } from "../../../shared/types";
+
+const repository = new UserRepository();
+
+export class AuthService {
+  async registerUser(data: AuthBody) {
+    if (data.password !== data.confirmPassword) {
+      logger.error("Passwords do not matchs");
+
+      throw new AppError("Passwords do not matchs", 400);
+    }
+
+    const user = await repository.IsUserExistsEmail(data.email);
+    if (user) {
+      logger.error("User already exists");
+
+      throw new AppError("User already exists", 400);
+      
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+
+    const newUser = await repository.createUser({
+      name: data.name,
+      surname: data.surname,
+      email: data.email,
+      password: hashedPassword,
+      role: data.role,
+    });
+
+    const token = jwt.sign(
+      {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+      },
+      process.env.JWT_SECRET as string,
+      { expiresIn: process.env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] },
+    );
+
+    logger.info("User registered successfully");
+    const { password: _, ...userWithoutPassword } = newUser;
+    return {
+      success: true,
+      message: "User registered successfully",
+      code: 201,
+      user: userWithoutPassword,
+      token,
+    };
+  }
+
+  async loginUser(data: LoginBody) {
+    const user = await repository.IsUserExistsEmail(data.email);
+    if (!user) {
+      logger.error("User not found");
+      throw new AppError( "User not found", 404);
+    }
+
+    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+    if (!isPasswordValid) {
+      logger.error("Invalid password");
+        throw new AppError( "Invalid password", 401);
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET as string,
+      { expiresIn: process.env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] },
+    );
+
+    logger.info("User logged in successfully");
+    const { password: _, ...userWithoutPassword } = user;
+
+    return {
+      success: true,
+      message: "User logged in successfully",
+      code: 200,
+      user: userWithoutPassword,
+      token,
+    };
+  }
+}

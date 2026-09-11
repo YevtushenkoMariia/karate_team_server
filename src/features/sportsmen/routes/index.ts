@@ -1,0 +1,1 @@
+export { athleteRoutes } from "./sportsmen";

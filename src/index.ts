@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import { buildApp } from './app';
 
-import { logger } from './utils/logger';  
+import { logger } from './shared';  
 
 const startServer = async () => {
   const app = await buildApp(); 

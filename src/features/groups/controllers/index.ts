@@ -1,0 +1,1 @@
+export { GroupsController } from "./groups";

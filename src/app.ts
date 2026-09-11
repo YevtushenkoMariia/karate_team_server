@@ -1,9 +1,8 @@
 import Fastify from "fastify";
-import { athleteRoutes as sportsmenRoutes } from "./routes/sportsmens";
 
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
-import authPlugin from "./plugins/auth";
+import { authPlugin } from "./shared";
 import cors from "@fastify/cors";
 import {registerRoutes} from "./router"
 

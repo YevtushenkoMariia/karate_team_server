@@ -7,7 +7,7 @@ exports.buildApp = buildApp;
 const fastify_1 = __importDefault(require("fastify"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
-const auth_1 = __importDefault(require("./plugins/auth"));
+const shared_1 = require("./shared");
 const cors_1 = __importDefault(require("@fastify/cors"));
 const router_1 = require("./router");
 async function buildApp() {
@@ -45,7 +45,7 @@ async function buildApp() {
             deepLinking: false,
         },
     });
-    await app.register(auth_1.default);
+    await app.register(shared_1.authPlugin);
     (0, router_1.registerRoutes)(app);
     return app;
 }

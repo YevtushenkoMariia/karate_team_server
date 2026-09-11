@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.locationRepository = exports.LocationRepository = exports.LocationService = exports.LocationController = exports.locationRoutes = void 0;
+var routes_1 = require("./routes");
+Object.defineProperty(exports, "locationRoutes", { enumerable: true, get: function () { return routes_1.locationRoutes; } });
+var controllers_1 = require("./controllers");
+Object.defineProperty(exports, "LocationController", { enumerable: true, get: function () { return controllers_1.LocationController; } });
+var services_1 = require("./services");
+Object.defineProperty(exports, "LocationService", { enumerable: true, get: function () { return services_1.LocationService; } });
+var repositories_1 = require("./repositories");
+Object.defineProperty(exports, "LocationRepository", { enumerable: true, get: function () { return repositories_1.LocationRepository; } });
+Object.defineProperty(exports, "locationRepository", { enumerable: true, get: function () { return repositories_1.locationRepository; } });

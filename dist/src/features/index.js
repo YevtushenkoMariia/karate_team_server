@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.athleteRoutes = exports.groupsRoutes = exports.locationRoutes = exports.userRoutes = exports.authRoutes = void 0;
+var auth_1 = require("./auth");
+Object.defineProperty(exports, "authRoutes", { enumerable: true, get: function () { return auth_1.authRoutes; } });
+var users_1 = require("./users");
+Object.defineProperty(exports, "userRoutes", { enumerable: true, get: function () { return users_1.userRoutes; } });
+var locations_1 = require("./locations");
+Object.defineProperty(exports, "locationRoutes", { enumerable: true, get: function () { return locations_1.locationRoutes; } });
+var groups_1 = require("./groups");
+Object.defineProperty(exports, "groupsRoutes", { enumerable: true, get: function () { return groups_1.groupsRoutes; } });
+var sportsmen_1 = require("./sportsmen");
+Object.defineProperty(exports, "athleteRoutes", { enumerable: true, get: function () { return sportsmen_1.athleteRoutes; } });
