@@ -21,3 +21,17 @@ export const LoginUserSchema = Type.Object({
 
 export type AuthBody = Static<typeof RegisterUserSchema>;
 export type LoginBody = Static<typeof LoginUserSchema>;
+
+export type RegisterUserRequest = {
+  role: AuthBody["role"];
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+export type LoginUserRequest = {
+  email: string;
+  password: string;
+};

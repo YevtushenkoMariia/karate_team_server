@@ -6,5 +6,11 @@ export {
   CreateSportsmenSchema,
   SportsmenParamsSchema,
 } from "./types";
-export type { CreateSportsmenBody, SportsmenParams } from "./types";
+export type {
+  CreateSportsmenBody,
+  SportsmenParams,
+  GetSportsmenByIdRequest,
+  CreateSportsmenRequest,
+  UpsertSportsmenRequest,
+} from "./types";
 export { toKarateLevel, toSportsmanStatus } from "./utils";

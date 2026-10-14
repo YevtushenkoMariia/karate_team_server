@@ -5,4 +5,9 @@ export {
   RegisterUserSchema,
   LoginUserSchema,
 } from "./types";
-export type { AuthBody, LoginBody } from "./types";
+export type {
+  AuthBody,
+  LoginBody,
+  RegisterUserRequest,
+  LoginUserRequest,
+} from "./types";

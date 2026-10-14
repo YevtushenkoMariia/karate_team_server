@@ -19,4 +19,11 @@ export type {
   UserParams,
   ProfileBody,
   UpdateUserBody,
+  GetUserProfileRequest,
+  UpdateUserProfileRequest,
+  CreateUserRequest,
+  UpdateUserProfileData,
+  UserIdRequest,
+  EmailRequest,
+  UpsertCoachRequest,
 } from "./types";

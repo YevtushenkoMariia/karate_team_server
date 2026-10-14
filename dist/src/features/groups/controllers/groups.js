@@ -13,10 +13,11 @@ class GroupsController {
                     message: "User ID and role are required",
                 });
             }
-            const result = await service.getUserMemberGroups({
-                userId: userId,
-                role: role,
-            });
+            const payload = {
+                userId,
+                role,
+            };
+            const result = await service.getUserMemberGroups(payload);
             return reply.status(200).send(result);
         }
         catch (error) {
@@ -35,11 +36,12 @@ class GroupsController {
                     message: "User ID and group ID are required",
                 });
             }
-            const result = await service.getGroup({
+            const payload = {
                 userId,
                 groupId,
                 role,
-            });
+            };
+            const result = await service.getGroup(payload);
             return reply.status(200).send(result);
         }
         catch (error) {
@@ -57,10 +59,11 @@ class GroupsController {
                     message: "User ID is required",
                 });
             }
-            const result = await service.joinGroup({
+            const payload = {
                 userId,
                 code: request.body.groupCode,
-            });
+            };
+            const result = await service.joinGroup(payload);
             return reply.status(200).send(result);
         }
         catch (error) {
@@ -78,7 +81,8 @@ class GroupsController {
                     message: "User ID is required",
                 });
             }
-            const result = await service.getGroupMembers({ userId, groupId });
+            const payload = { userId, groupId };
+            const result = await service.getGroupMembers(payload);
             return reply.status(200).send(result);
         }
         catch (error) {

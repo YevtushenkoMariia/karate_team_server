@@ -1,9 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import {
   GetGroupQuery,
+  GetGroupRequest,
+  GetUserMemberGroupsRequest,
   GroupBody,
   GroupIdParams,
+  GroupMembersRequest,
   JoinGroupBody,
+  JoinGroupRequest,
   UserIdParams,
 } from "../types";
 import { GroupsService } from "../services";
@@ -28,10 +32,12 @@ export class GroupsController {
         });
       }
 
-      const result = await service.getUserMemberGroups({
-        userId: userId,
-        role: role,
-      });
+      const payload: GetUserMemberGroupsRequest = {
+        userId,
+        role,
+      };
+
+      const result = await service.getUserMemberGroups(payload);
       return reply.status(200).send(result);
     } catch (error: any) {
       return reply.status(404).send({
@@ -58,11 +64,13 @@ export class GroupsController {
         });
       }
 
-      const result = await service.getGroup({
+      const payload: GetGroupRequest = {
         userId,
         groupId,
         role,
-      });
+      };
+
+      const result = await service.getGroup(payload);
       return reply.status(200).send(result);
     } catch (error: any) {
       return reply.status(error.statusCode || 404).send({
@@ -88,10 +96,12 @@ export class GroupsController {
         });
       }
 
-      const result = await service.joinGroup({
+      const payload: JoinGroupRequest = {
         userId,
         code: request.body.groupCode,
-      });
+      };
+
+      const result = await service.joinGroup(payload);
       return reply.status(200).send(result);
     } catch (error: any) {
       return reply.status(error.statusCode || 400).send({
@@ -116,7 +126,9 @@ export class GroupsController {
         });
       }
 
-      const result = await service.getGroupMembers({userId, groupId});
+      const payload: GroupMembersRequest = { userId, groupId };
+
+      const result = await service.getGroupMembers(payload);
 
       return reply.status(200).send(result);
     } catch (error: any) {

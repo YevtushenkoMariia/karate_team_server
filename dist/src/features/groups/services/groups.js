@@ -56,7 +56,9 @@ class GroupsService {
         await groupsRepository.joinGroup(userId, group.id);
         return groupsRepository.getGroupById(group.id);
     }
-    async IsGroupMember(userId, groupId) {
+    async IsGroupMember(body) {
+        const userId = body.userId;
+        const groupId = body.groupId;
         const isMember = await groupsRepository.isUserInGroup(userId, groupId);
         return isMember ? true : false;
     }
@@ -71,7 +73,7 @@ class GroupsService {
         if (!group) {
             throw new types_1.AppError("Group not found", 404);
         }
-        const isGroupMember = await this.IsGroupMember(userId, groupId);
+        const isGroupMember = await this.IsGroupMember({ userId, groupId });
         if (!isGroupMember) {
             throw new types_1.AppError("You are not member of this group", 403);
         }

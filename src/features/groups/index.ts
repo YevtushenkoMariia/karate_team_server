@@ -9,4 +9,13 @@ export {
   GroupIdParams,
   JoinGroupSchema,
 } from "./types";
-export type { JoinGroupBody } from "./types";
+export type {
+  JoinGroupBody,
+  GetUserMemberGroupsRequest,
+  GetGroupRequest,
+  JoinGroupRequest,
+  GroupMembersRequest,
+  UserIdRequest,
+  GroupIdRequest,
+  GroupCodeRequest,
+} from "./types";

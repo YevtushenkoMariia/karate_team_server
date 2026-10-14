@@ -1,12 +1,18 @@
 import { GroupsRepository } from "../repositories";
 import { UserRepository } from "../../users/repositories";
 import { AppError } from "../../../shared/types";
+import {
+  GetGroupRequest,
+  GetUserMemberGroupsRequest,
+  GroupMembersRequest,
+  JoinGroupRequest,
+} from "../types";
 
 const userRepository = new UserRepository();
 const groupsRepository = new GroupsRepository();
 
 export class GroupsService {
-  async getUserMemberGroups(body: { userId: string; role: string }) {
+  async getUserMemberGroups(body: GetUserMemberGroupsRequest) {
     const userId = body.userId;
 
     const isUserExists = await userRepository.IsUserExistsId(userId);
@@ -25,7 +31,7 @@ export class GroupsService {
     return groupsData;
   }
 
-  async getGroup(body: { userId: string; groupId: string; role?: string }) {
+  async getGroup(body: GetGroupRequest) {
     const userId = body.userId;
     const groupId = body.groupId;
 
@@ -49,7 +55,7 @@ export class GroupsService {
     return group;
   }
 
-  async joinGroup(body: { userId: string; code: string }) {
+  async joinGroup(body: JoinGroupRequest) {
     const userId = body.userId;
 
     const isUserExists = await userRepository.IsUserExistsId(userId);
@@ -72,13 +78,16 @@ export class GroupsService {
     return groupsRepository.getGroupById(group.id);
   }
 
-  private async IsGroupMember(userId: string, groupId: string) {
+  private async IsGroupMember(body: GroupMembersRequest) {
+    const userId = body.userId;
+    const groupId = body.groupId;
+
     const isMember = await groupsRepository.isUserInGroup(userId, groupId);
 
     return isMember ? true : false;
   }
 
-  async getGroupMembers(body: { userId: string; groupId: string }) {
+  async getGroupMembers(body: GroupMembersRequest) {
     const userId = body.userId;
     const groupId = body.groupId;
 
@@ -92,7 +101,7 @@ export class GroupsService {
       throw new AppError("Group not found", 404);
     }
 
-    const isGroupMember = await this.IsGroupMember(userId, groupId);
+    const isGroupMember = await this.IsGroupMember({ userId, groupId });
     if (!isGroupMember) {
       throw new AppError("You are not member of this group", 403);
     }

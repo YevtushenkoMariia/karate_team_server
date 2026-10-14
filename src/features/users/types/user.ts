@@ -1,4 +1,8 @@
 import { Type, Static } from '@sinclair/typebox';
+import {
+  karate_level_type,
+  role_type,
+} from "../../../../generated/prisma/client";
 
 export const CreateUserSchema = Type.Object({
   birthday: Type.String(),
@@ -39,3 +43,61 @@ export type CreateUserBody = Static<typeof CreateUserSchema>;
 export type UserParams = Static<typeof UserParamsSchema>;
 export type ProfileBody = Static<typeof UserProfileSchema>;
 export type UpdateUserBody = Static<typeof UpdateUserProfileSchema>;
+
+export type GetUserProfileRequest = {
+  userId: string;
+  role: string;
+};
+
+export type UpdateUserProfileRequest = {
+  userId: string;
+  role: role_type;
+  name?: string;
+  surname?: string;
+  email?: string;
+  gender?: string;
+  phone_number?: string;
+  birth_date?: string;
+  city?: string;
+  club?: string;
+  karate_level?: string;
+  position?: string;
+  specialization?: string;
+  status?: string;
+};
+
+export type CreateUserRequest = {
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  role: role_type;
+};
+
+export type UpdateUserProfileData = {
+  userId: string;
+  role: role_type;
+  name?: string;
+  surname?: string;
+  email?: string;
+  gender?: string;
+  phone_number?: string;
+  birth_date?: Date;
+};
+
+export type UserIdRequest = {
+  userId: string;
+};
+
+export type EmailRequest = {
+  email: string;
+};
+
+export type UpsertCoachRequest = {
+  userId: string;
+  city_id: string | null;
+  club_id: string | null;
+  karate_level?: karate_level_type;
+  position?: string;
+  specialization?: string;
+};
