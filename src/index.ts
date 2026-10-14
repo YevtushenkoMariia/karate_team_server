@@ -1,27 +1,17 @@
-
-import 'dotenv/config';
-import { buildApp } from './app';
-
-import { logger } from './shared';  
+import "dotenv/config";
+import { loadConfig } from "./config";
+import { buildApp } from "./app";
 
 const startServer = async () => {
-  const app = await buildApp(); 
-  const portValue = process.env.PORT || '4000'; 
-  
+  const config = loadConfig();
+  const app = await buildApp(config);
+
   try {
-    await app.listen({
-      port: parseInt(portValue), host: '0.0.0.0'
-    });
-    console.log(`Server is running on http://localhost:${portValue}`);
-
-    logger.info(`Server is running on http://localhost:${portValue}`);
-  
-
+    await app.listen({ port: config.port, host: "0.0.0.0" });
   } catch (err) {
     app.log.error(err);
     process.exit(1);
   }
-
 };
 
 startServer();

@@ -1,1 +1,0 @@
-export { GroupsService } from "./groups";

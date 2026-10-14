@@ -1,1 +1,0 @@
-export { locationRoutes } from "./location";

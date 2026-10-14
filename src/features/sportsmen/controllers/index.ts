@@ -1,1 +1,0 @@
-export { SportsmenController } from "./sportsmen";

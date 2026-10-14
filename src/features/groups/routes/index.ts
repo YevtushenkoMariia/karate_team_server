@@ -1,1 +1,0 @@
-export { groupsRoutes } from "./groups";

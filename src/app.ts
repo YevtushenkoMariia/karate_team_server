@@ -1,16 +1,18 @@
 import Fastify from "fastify";
-
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
-import { authPlugin } from "./shared";
 import cors from "@fastify/cors";
-import {registerRoutes} from "./router"
+import type { AppConfig } from "./config";
+import { authPlugin, createDb, errorHandler, EventBus, logger } from "./shared";
+import { createIdentityModule } from "./modules/identity";
+import { createLocationsModule } from "./modules/locations";
+import { createMembersModule } from "./modules/members";
+import { createGroupsModule } from "./modules/groups";
 
-
-export async function buildApp() {
-  const app = Fastify({
-    logger: true
-  });
+// Composition root: the only place that knows about every module and wires
+// their dependencies together.
+export async function buildApp(config: AppConfig) {
+  const app = Fastify({ logger: true });
 
   await app.register(swagger, {
     openapi: {
@@ -19,7 +21,7 @@ export async function buildApp() {
         description: "API для управління спортсменами, тренерами та командами",
         version: "1.0.0",
       },
-      servers: [{ url: "http://localhost:4000", description: "Local server" }],
+      servers: [{ url: `http://localhost:${config.port}`, description: "Local server" }],
       components: {
         securitySchemes: {
           bearerAuth: {
@@ -33,10 +35,10 @@ export async function buildApp() {
   });
 
   await app.register(cors, {
-    origin: process.env.ORIGIN_FRONTEND_URL,
+    origin: config.corsOrigin,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
-});
+  });
 
   await app.register(swaggerUi, {
     routePrefix: "/docs",
@@ -46,9 +48,31 @@ export async function buildApp() {
     },
   });
 
-  await app.register(authPlugin);
+  await app.register(authPlugin, { jwtSecret: config.jwtSecret });
+  app.setErrorHandler(errorHandler);
 
-  registerRoutes(app);
+  const db = createDb(config.databaseUrl);
+  const events = new EventBus(logger);
+  app.addHook("onClose", () => db.$disconnect());
+
+  const locations = createLocationsModule({ db });
+  const identity = createIdentityModule({
+    db,
+    events,
+    jwtSecret: config.jwtSecret,
+    jwtExpiresIn: config.jwtExpiresIn,
+  });
+  const members = createMembersModule({
+    db,
+    events,
+    identity: identity.api,
+    locations: locations.api,
+  });
+  const groups = createGroupsModule({ db, identity: identity.api });
+
+  for (const module of [identity, members, groups, locations]) {
+    await app.register(module.routes, { prefix: module.prefix });
+  }
 
   return app;
 }

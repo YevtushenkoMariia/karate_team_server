@@ -1,1 +1,0 @@
-export { GroupsRepository } from "./groups";

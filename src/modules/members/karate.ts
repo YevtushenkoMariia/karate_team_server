@@ -1,7 +1,8 @@
 import {
   karate_level_type,
   sportsman_role_type,
-} from "../../../../generated/prisma/client";
+} from "../../../generated/prisma/client";
+import { BadRequestError } from "../../shared";
 
 const KARATE_LEVEL_DB_TO_ENUM: Record<string, karate_level_type> = {
   "0_KYU": karate_level_type.KYU_1,
@@ -54,7 +55,7 @@ export function toKarateLevel(
     return mapped;
   }
 
-  throw new Error(
+  throw new BadRequestError(
     `Invalid karate_level "${value}". Use values like KYU_9 or 9_KYU.`,
   );
 }
@@ -71,7 +72,7 @@ export function toSportsmanStatus(
     return normalized as sportsman_role_type;
   }
 
-  throw new Error(
+  throw new BadRequestError(
     `Invalid status "${value}". Expected JUST_TRAIN, RESERVE, or NATIONAL_TEAM.`,
   );
 }

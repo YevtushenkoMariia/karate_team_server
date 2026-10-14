@@ -1,1 +1,0 @@
-export { LocationController } from "./location";
