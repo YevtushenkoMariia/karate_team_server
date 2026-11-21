@@ -8,9 +8,24 @@ import {
   logger,
   UnauthorizedError,
 } from "../../shared";
-import { UsersRepository } from "./users.repository";
+import type { UsersRepository } from "./users.repository";
 import { UserRegistered } from "./identity.events";
 import { LoginBody, RegisterBody } from "./auth.schemas";
+import type { role_type } from "../../../generated/prisma/client";
+
+type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  surname: string;
+  password: string;
+  role: role_type;
+};
+
+export type AuthUserStore = {
+  findByEmail(email: string): Promise<AuthUser | null>;
+  create(data: Parameters<UsersRepository["create"]>[0]): Promise<AuthUser>;
+};
 
 type TokenOptions = {
   secret: string;
@@ -19,7 +34,7 @@ type TokenOptions = {
 
 export class AuthService {
   constructor(
-    private readonly users: UsersRepository,
+    private readonly users: AuthUserStore,
     private readonly events: EventBus,
     private readonly tokenOptions: TokenOptions,
   ) {}

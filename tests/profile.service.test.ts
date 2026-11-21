@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, expect, it } from "vitest";
 import { Value } from "@sinclair/typebox/value";
 import { role_type } from "../generated/prisma/client";
 import type {
@@ -104,29 +103,27 @@ describe("ProfileService.updateProfile locations", () => {
       {},
     );
 
-    assert.deepEqual(
+    expect(
       { city_id: updates[0]?.city_id, club_id: updates[0]?.club_id },
-      { city_id: "city-existing", club_id: "club-existing" },
-    );
-    assert.deepEqual(createdCities, []);
-    assert.deepEqual(createdClubs, []);
+    ).toEqual({ city_id: "city-existing", club_id: "club-existing" });
+    expect(createdCities).toEqual([]);
+    expect(createdClubs).toEqual([]);
   });
 
   it("accepts null and clears city and club", async () => {
     const { service, updates } = createService();
     const body = { city: null, club: null };
 
-    assert.equal(Value.Check(UpdateProfileBody, body), true);
+    expect(Value.Check(UpdateProfileBody, body)).toBe(true);
 
     await service.updateProfile(
       { id: user.id, email: user.email, role: user.role },
       body,
     );
 
-    assert.deepEqual(
+    expect(
       { city_id: updates[0]?.city_id, club_id: updates[0]?.club_id },
-      { city_id: null, club_id: null },
-    );
+    ).toEqual({ city_id: null, club_id: null });
   });
 
   it("uses the current city when updating only the club", async () => {
@@ -137,12 +134,11 @@ describe("ProfileService.updateProfile locations", () => {
       { club: "New club" },
     );
 
-    assert.deepEqual(
+    expect(
       { city_id: updates[0]?.city_id, club_id: updates[0]?.club_id },
-      { city_id: "city-existing", club_id: "club-created" },
-    );
-    assert.deepEqual(createdCities, []);
-    assert.deepEqual(createdClubs, [
+    ).toEqual({ city_id: "city-existing", club_id: "club-created" });
+    expect(createdCities).toEqual([]);
+    expect(createdClubs).toEqual([
       { name: "New club", cityId: "city-existing" },
     ]);
   });
@@ -165,22 +161,20 @@ describe("ProfileService.updateProfile birth_date", () => {
       { birth_date: earliestDate },
     );
 
-    assert.deepEqual(
+    expect(
       userUpdates.map((update) => update.birth_date?.toISOString().slice(0, 10)),
-      [today, earliestDate],
-    );
+    ).toEqual([today, earliestDate]);
   });
 
   it("rejects impossible calendar dates", async () => {
     const { service } = createService();
 
-    await assert.rejects(
+    await expect(
       service.updateProfile(
         { id: user.id, email: user.email, role: user.role },
         { birth_date: "2024-02-30" },
       ),
-      BadRequestError,
-    );
+    ).rejects.toBeInstanceOf(BadRequestError);
   });
 
   it("rejects future dates", async () => {
@@ -188,13 +182,12 @@ describe("ProfileService.updateProfile birth_date", () => {
     const tomorrow = new Date();
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
-    await assert.rejects(
+    await expect(
       service.updateProfile(
         { id: user.id, email: user.email, role: user.role },
         { birth_date: tomorrow.toISOString().slice(0, 10) },
       ),
-      BadRequestError,
-    );
+    ).rejects.toBeInstanceOf(BadRequestError);
   });
 
   it("rejects dates more than 120 years ago", async () => {
@@ -204,12 +197,11 @@ describe("ProfileService.updateProfile birth_date", () => {
     earliest.setUTCFullYear(earliest.getUTCFullYear() - 120);
     earliest.setUTCDate(earliest.getUTCDate() - 1);
 
-    await assert.rejects(
+    await expect(
       service.updateProfile(
         { id: user.id, email: user.email, role: user.role },
         { birth_date: earliest.toISOString().slice(0, 10) },
       ),
-      BadRequestError,
-    );
+    ).rejects.toBeInstanceOf(BadRequestError);
   });
 });

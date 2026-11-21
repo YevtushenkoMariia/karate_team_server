@@ -63,6 +63,12 @@ operations across repositories. Construct each participating repository with
 `updateProfile` unit of work binds identity, location, and member repositories
 to the same transaction.
 
+## Testing
+
+Run unit and HTTP integration tests with `npm test`. Unit tests use fake
+repositories; HTTP tests exercise the production app composition through
+Fastify's `app.inject()` with a test database in memory.
+
 ## Module dependencies
 
 ```

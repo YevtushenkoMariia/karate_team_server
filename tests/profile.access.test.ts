@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, expect, it } from "vitest";
 import { role_type } from "../generated/prisma/client";
 import type { IdentityApi, UserSummary } from "../src/modules/identity";
 import type { LocationsApi } from "../src/modules/locations";
@@ -97,8 +96,8 @@ describe("ProfileService profile access", () => {
       role: requester.role,
     });
 
-    assert.equal(profile.id, requester.id);
-    assert.deepEqual(userLookups, [requester.id]);
+    expect(profile.id).toBe(requester.id);
+    expect(userLookups).toEqual([requester.id]);
   });
 
   it("allows a coach to view an assigned sportsman", async () => {
@@ -111,7 +110,7 @@ describe("ProfileService profile access", () => {
       sportsman.id,
     );
 
-    assert.equal(profile.id, sportsman.id);
+    expect(profile.id).toBe(sportsman.id);
   });
 
   it("denies a coach access to an unassigned sportsman", async () => {
@@ -119,13 +118,12 @@ describe("ProfileService profile access", () => {
     const sportsman = makeUser(sportsmanId, role_type.SPORTSMAN);
     const { service } = createService(coach, sportsman);
 
-    await assert.rejects(
+    await expect(
       service.getMemberProfile(
         { id: coach.id, email: coach.email, role: coach.role },
         sportsman.id,
       ),
-      ForbiddenError,
-    );
+    ).rejects.toBeInstanceOf(ForbiddenError);
   });
 
   it("allows an admin to view any member profile", async () => {
@@ -138,7 +136,7 @@ describe("ProfileService profile access", () => {
       member.id,
     );
 
-    assert.equal(profile.id, member.id);
+    expect(profile.id).toBe(member.id);
   });
 
   it("denies a sportsman access to other member profiles", async () => {
@@ -146,7 +144,7 @@ describe("ProfileService profile access", () => {
     const otherMember = makeUser(coachId, role_type.COACH);
     const { service } = createService(sportsman, otherMember);
 
-    await assert.rejects(
+    await expect(
       service.getMemberProfile(
         {
           id: sportsman.id,
@@ -155,7 +153,6 @@ describe("ProfileService profile access", () => {
         },
         otherMember.id,
       ),
-      ForbiddenError,
-    );
+    ).rejects.toBeInstanceOf(ForbiddenError);
   });
 });
