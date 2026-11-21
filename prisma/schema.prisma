@@ -30,6 +30,8 @@ model championships {
   city_id      String?        @db.Uuid
   achievements achievements[]
   cities       cities?        @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([city_id], map: "idx_championships_city_id")
 }
 
 model cities {
@@ -41,6 +43,8 @@ model cities {
   clubs         clubs[]
   coaches       coaches[]
   sportsmen     sportsmen[]
+
+  @@index([country_id], map: "idx_cities_country_id")
 }
 
 model clubs {
@@ -60,6 +64,7 @@ model coach_sportsman {
   sportsmen    sportsmen @relation(fields: [sportsman_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([coach_id, sportsman_id])
+  @@index([sportsman_id], map: "idx_coach_sportsman_sportsman_id")
 }
 
 model coaches {
@@ -75,6 +80,9 @@ model coaches {
   cities          cities?            @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   clubs           clubs?             @relation(fields: [club_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           users              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([city_id], map: "idx_coaches_city_id")
+  @@index([club_id], map: "idx_coaches_club_id")
 }
 
 model countries {
@@ -123,6 +131,9 @@ model sportsmen {
   cities          cities?              @relation(fields: [city_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   clubs           clubs?               @relation(fields: [club_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([city_id], map: "idx_sportsmen_city_id")
+  @@index([club_id], map: "idx_sportsmen_club_id")
 }
 
 model task_categories {
@@ -179,6 +190,8 @@ model training_task_reports {
   author_id      String?           @db.Uuid
   users          users?            @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   training_tasks training_tasks?   @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([task_id, author_id], map: "training_task_reports_task_id_author_id_key")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
