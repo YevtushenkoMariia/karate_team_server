@@ -1,4 +1,5 @@
 import type {
+  gender_type,
   role_type,
   user_status_type,
 } from "../../../generated/prisma/client";
@@ -9,7 +10,7 @@ export type UserSummary = {
   surname: string;
   email: string;
   role: role_type;
-  gender: string | null;
+  gender: gender_type | null;
   phone_number: string | null;
   birth_date: Date | null;
 };
@@ -34,7 +35,7 @@ export type UpdateUserData = {
   name?: string;
   surname?: string;
   email?: string;
-  gender?: string;
+  gender?: gender_type;
   phone_number?: string;
   birth_date?: Date;
 };

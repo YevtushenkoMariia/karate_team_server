@@ -1,4 +1,5 @@
 import type {
+  gender_type,
   karate_level_type,
   sportsman_role_type,
 } from "../../../generated/prisma/client";
@@ -40,7 +41,7 @@ export type ProfileIdentityDto = {
   name: string;
   surname: string;
   email: string;
-  gender: string | null;
+  gender: gender_type | null;
   phone_number: string | null;
   birth_date: Date | null;
 };

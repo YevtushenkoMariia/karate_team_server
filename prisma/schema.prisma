@@ -221,7 +221,7 @@ model users {
   password              String                  @db.VarChar(255)
   name                  String                  @db.VarChar(60)
   surname               String                  @db.VarChar(60)
-  gender                String?                 @db.VarChar(10)
+  gender                gender_type?
   role                  role_type               @default(SPORTSMAN)
   phone_number          String?                 @db.VarChar(20)
   birth_date            DateTime?               @db.Date
@@ -256,6 +256,12 @@ enum competition_type {
   KATA
   KUMITE
   TEAM_KATA
+}
+
+enum gender_type {
+  MALE
+  FEMALE
+  OTHER
 }
 
 enum karate_level_type {

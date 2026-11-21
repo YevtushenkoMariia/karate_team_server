@@ -1,4 +1,7 @@
-import { role_type } from "../../generated/prisma/client";
+import {
+  gender_type,
+  role_type,
+} from "../../generated/prisma/client";
 import type { Db } from "../../src/shared";
 
 type TestUser = {
@@ -8,7 +11,7 @@ type TestUser = {
   email: string;
   password: string;
   role: role_type;
-  gender: string | null;
+  gender: gender_type | null;
   phone_number: string | null;
   birth_date: Date | null;
 };

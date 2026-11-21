@@ -1,4 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
+import { gender_type } from "../../../generated/prisma/client";
 
 export const MemberProfileParams = Type.Object({
   userId: Type.String({ format: "uuid" }),
@@ -8,7 +9,7 @@ export const UpdateProfileBody = Type.Object({
   name: Type.Optional(Type.String()),
   surname: Type.Optional(Type.String()),
   email: Type.Optional(Type.String()),
-  gender: Type.Optional(Type.String()),
+  gender: Type.Optional(Type.Enum(gender_type)),
   phone_number: Type.Optional(Type.String()),
   birth_date: Type.Optional(Type.String({ format: "date" })),
   city: Type.Optional(Type.Union([Type.String(), Type.Null()])),

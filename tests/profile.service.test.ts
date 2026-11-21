@@ -166,6 +166,13 @@ describe("ProfileService.updateProfile birth_date", () => {
     ).toEqual([today, earliestDate]);
   });
 
+  describe("UpdateProfileBody gender", () => {
+    it("accepts only declared gender enum values", () => {
+      expect(Value.Check(UpdateProfileBody, { gender: "FEMALE" })).toBe(true);
+      expect(Value.Check(UpdateProfileBody, { gender: "UNLISTED" })).toBe(false);
+    });
+  });
+
   it("rejects impossible calendar dates", async () => {
     const { service } = createService();
 
