@@ -7,12 +7,26 @@ import { CoachesRepository } from "./coaches.repository";
 import { toKarateLevel, toSportsmanStatus } from "./karate";
 import { ProfileQuery, UpdateProfileBody } from "./profile.schemas";
 
+type SportsmanProfileStore = {
+  findByUserId: (
+    userId: string,
+  ) => Promise<Awaited<ReturnType<SportsmenRepository["findByUserId"]>>>;
+  upsert: SportsmenRepository["upsert"];
+};
+
+type CoachProfileStore = {
+  findByUserId: (
+    userId: string,
+  ) => Promise<Awaited<ReturnType<CoachesRepository["findByUserId"]>>>;
+  upsert: CoachesRepository["upsert"];
+};
+
 export class ProfileService {
   constructor(
     private readonly identity: IdentityApi,
     private readonly locations: LocationsApi,
-    private readonly sportsmen: SportsmenRepository,
-    private readonly coaches: CoachesRepository,
+    private readonly sportsmen: SportsmanProfileStore,
+    private readonly coaches: CoachProfileStore,
   ) {}
 
   async getProfile(query: ProfileQuery) {
@@ -42,6 +56,11 @@ export class ProfileService {
     const karateLevel = toKarateLevel(body.karate_level);
     const sportsmanStatus = toSportsmanStatus(body.status);
 
+    const currentProfile = await this.findCurrentMemberProfile(
+      user.id,
+      user.role,
+    );
+
     await this.identity.updateUser(user.id, {
       name: body.name,
       surname: body.surname,
@@ -51,13 +70,19 @@ export class ProfileService {
       birth_date: body.birth_date ? new Date(body.birth_date) : undefined,
     });
 
-    const cityId = body.city?.trim()
-      ? await this.locations.findOrCreateCity(body.city.trim())
-      : null;
+    const cityId =
+      body.city === undefined
+        ? (currentProfile?.city_id ?? null)
+        : body.city?.trim()
+          ? await this.locations.findOrCreateCity(body.city.trim())
+          : null;
 
-    const clubId = body.club?.trim()
-      ? await this.locations.findOrCreateClub(body.club.trim(), cityId)
-      : null;
+    const clubId =
+      body.club === undefined
+        ? (currentProfile?.club_id ?? null)
+        : body.club?.trim()
+          ? await this.locations.findOrCreateClub(body.club.trim(), cityId)
+          : null;
 
     if (user.role === role_type.COACH) {
       await this.coaches.upsert(user.id, {
@@ -125,6 +150,18 @@ export class ProfileService {
     }
 
     return base;
+  }
+
+  private async findCurrentMemberProfile(userId: string, role: role_type) {
+    if (role === role_type.COACH) {
+      return this.coaches.findByUserId(userId);
+    }
+
+    if (role === role_type.SPORTSMAN) {
+      return this.sportsmen.findByUserId(userId);
+    }
+
+    return null;
   }
 
   private async resolvePlaces(cityId?: string | null, clubId?: string | null) {
