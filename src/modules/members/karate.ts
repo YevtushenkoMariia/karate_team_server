@@ -5,7 +5,7 @@ import {
 import { BadRequestError } from "../../shared";
 
 const KARATE_LEVEL_DB_TO_ENUM: Record<string, karate_level_type> = {
-  "0_KYU": karate_level_type.KYU_1,
+  "0_KYU": karate_level_type.KYU_0,
   "10_KYU": karate_level_type.KYU_10,
   "9_KYU": karate_level_type.KYU_9,
   "8_KYU": karate_level_type.KYU_8,

@@ -28,11 +28,17 @@ export function createIdentityModule(deps: Deps): AppModule & { api: IdentityApi
     routes: async (fastify: FastifyInstance) => {
       fastify.post("/register", {
         schema: { body: RegisterBody },
+        config: {
+          rateLimit: { max: 3, timeWindow: "1 hour" },
+        },
         handler: controller.register,
       });
 
       fastify.post("/login", {
         schema: { body: LoginBody },
+        config: {
+          rateLimit: { max: 5, timeWindow: "15 minutes" },
+        },
         handler: controller.login,
       });
     },

@@ -1,8 +1,11 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "competition_type" AS ENUM ('KATA', 'KUMITE', 'TEAM_KATA');
 
 -- CreateEnum
-CREATE TYPE "karate_level_type" AS ENUM ('10_KYU', '9_KYU', '8_KYU', '7_KYU', '6_KYU', '5_KYU', '4_KYU', '3_KYU', '2_KYU', '1_KYU', '1_DAN', '2_DAN', '3_DAN', '4_DAN', '5_DAN', '6_DAN', '7_DAN', '8_DAN', '9_DAN', '10_DAN');
+CREATE TYPE "karate_level_type" AS ENUM ('10_KYU', '9_KYU', '8_KYU', '7_KYU', '6_KYU', '5_KYU', '4_KYU', '3_KYU', '2_KYU', '1_KYU', '1_DAN', '2_DAN', '3_DAN', '4_DAN', '5_DAN', '6_DAN', '7_DAN', '8_DAN', '9_DAN', '10_DAN', '0_KYU');
 
 -- CreateEnum
 CREATE TYPE "role_type" AS ENUM ('ADMIN', 'COACH', 'SPORTSMAN');
@@ -21,95 +24,93 @@ CREATE TYPE "week_day_type" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY
 
 -- CreateTable
 CREATE TABLE "achievements" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
-    "championship_id" INTEGER,
     "category" VARCHAR(80),
     "place" INTEGER,
     "competition_type" "competition_type",
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "user_id" UUID,
+    "championship_id" UUID,
 
     CONSTRAINT "achievements_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "championships" (
-    "id" SERIAL NOT NULL,
     "name" VARCHAR(150) NOT NULL,
-    "city_id" INTEGER,
     "start_date" DATE,
     "end_date" DATE,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "city_id" UUID,
 
     CONSTRAINT "championships_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "cities" (
-    "id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
-    "country_id" INTEGER,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "country_id" UUID,
 
     CONSTRAINT "cities_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "clubs" (
-    "id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
-    "city_id" INTEGER,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "city_id" UUID,
 
     CONSTRAINT "clubs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "coach_sportsman" (
-    "coach_id" INTEGER NOT NULL,
-    "sportsman_id" INTEGER NOT NULL,
+    "coach_id" UUID NOT NULL,
+    "sportsman_id" UUID NOT NULL,
 
     CONSTRAINT "coach_sportsman_pkey" PRIMARY KEY ("coach_id","sportsman_id")
 );
 
 -- CreateTable
 CREATE TABLE "coaches" (
-    "user_id" INTEGER NOT NULL,
     "karate_level" "karate_level_type",
-    "city_id" INTEGER,
-    "club_id" INTEGER,
     "position" VARCHAR(100),
     "specialization" VARCHAR(100),
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "user_id" UUID NOT NULL,
+    "city_id" UUID,
+    "club_id" UUID,
 
     CONSTRAINT "coaches_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
 CREATE TABLE "countries" (
-    "id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
 
     CONSTRAINT "countries_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "groups" (
-    "id" SERIAL NOT NULL,
-    "author_id" INTEGER NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "description" TEXT,
     "code" VARCHAR(20) NOT NULL,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "author_id" UUID,
 
     CONSTRAINT "groups_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "health_reports" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
     "start_date" DATE NOT NULL,
     "end_date" DATE NOT NULL,
     "physical_state_grade" INTEGER,
@@ -118,84 +119,83 @@ CREATE TABLE "health_reports" (
     "emotional_state_comment" TEXT,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "user_id" UUID,
 
     CONSTRAINT "health_reports_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "sportsmen" (
-    "user_id" INTEGER NOT NULL,
     "karate_level" "karate_level_type",
-    "city_id" INTEGER,
-    "club_id" INTEGER,
     "status" "sportsman_role_type" DEFAULT 'JUST_TRAIN',
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "user_id" UUID NOT NULL,
+    "city_id" UUID,
+    "club_id" UUID,
 
     CONSTRAINT "sportsmen_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
 CREATE TABLE "task_categories" (
-    "id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
 
     CONSTRAINT "task_categories_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "training_plan_groups" (
-    "plan_id" INTEGER NOT NULL,
-    "group_id" INTEGER NOT NULL,
     "start_date" DATE NOT NULL,
     "end_date" DATE NOT NULL,
+    "plan_id" UUID NOT NULL,
+    "group_id" UUID NOT NULL,
 
     CONSTRAINT "training_plan_groups_pkey" PRIMARY KEY ("plan_id","group_id")
 );
 
 -- CreateTable
 CREATE TABLE "training_plan_users" (
-    "plan_id" INTEGER NOT NULL,
-    "user_id" INTEGER NOT NULL,
     "start_date" DATE NOT NULL,
     "end_date" DATE NOT NULL,
+    "plan_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
 
     CONSTRAINT "training_plan_users_pkey" PRIMARY KEY ("plan_id","user_id")
 );
 
 -- CreateTable
 CREATE TABLE "training_plans" (
-    "id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "description" TEXT,
-    "author_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "author_id" UUID,
 
     CONSTRAINT "training_plans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "training_task_reports" (
-    "id" SERIAL NOT NULL,
-    "task_id" INTEGER NOT NULL,
-    "author_id" INTEGER NOT NULL,
     "status" "task_status_type" DEFAULT 'TODO',
     "video_url" VARCHAR(255),
     "comment" TEXT,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "task_id" UUID,
+    "author_id" UUID,
 
     CONSTRAINT "training_task_reports_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "training_tasks" (
-    "id" SERIAL NOT NULL,
     "task_order" INTEGER NOT NULL,
-    "plan_id" INTEGER NOT NULL,
     "week_day" "week_day_type",
-    "category_id" INTEGER,
     "title" VARCHAR(100) NOT NULL,
     "description" TEXT,
     "duration_minutes" INTEGER,
@@ -205,13 +205,15 @@ CREATE TABLE "training_tasks" (
     "comment" TEXT,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "plan_id" UUID,
+    "category_id" UUID,
 
     CONSTRAINT "training_tasks_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" SERIAL NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password" VARCHAR(255) NOT NULL,
     "name" VARCHAR(60) NOT NULL,
@@ -223,16 +225,18 @@ CREATE TABLE "users" (
     "status" "user_status_type" NOT NULL DEFAULT 'VERIFYING',
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "email_verified" BOOLEAN NOT NULL DEFAULT false,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "users_groups" (
-    "user_id" INTEGER NOT NULL,
-    "group_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "user_id" UUID NOT NULL,
+    "group_id" UUID NOT NULL,
 
     CONSTRAINT "users_groups_pkey" PRIMARY KEY ("user_id","group_id")
 );
@@ -356,3 +360,4 @@ ALTER TABLE "users_groups" ADD CONSTRAINT "users_groups_group_id_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "users_groups" ADD CONSTRAINT "users_groups_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+

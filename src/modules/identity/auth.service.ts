@@ -8,7 +8,12 @@ import {
   logger,
   UnauthorizedError,
 } from "../../shared";
-import { UsersRepository } from "./users.repository";
+import type {
+  AuthUserStore,
+  LoginResult,
+  RegisterResult,
+  UserRecord,
+} from "./identity.types";
 import { UserRegistered } from "./identity.events";
 import { LoginBody, RegisterBody } from "./auth.schemas";
 
@@ -19,12 +24,12 @@ type TokenOptions = {
 
 export class AuthService {
   constructor(
-    private readonly users: UsersRepository,
+    private readonly users: AuthUserStore,
     private readonly events: EventBus,
     private readonly tokenOptions: TokenOptions,
   ) {}
 
-  async register(data: RegisterBody) {
+  async register(data: RegisterBody): Promise<RegisterResult> {
     if (data.password !== data.confirmPassword) {
       throw new BadRequestError("Passwords do not match");
     }
@@ -58,7 +63,7 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginBody) {
+  async login(data: LoginBody): Promise<LoginResult> {
     const user = await this.users.findByEmail(data.email);
     const isPasswordValid =
       user !== null && (await bcrypt.compare(data.password, user.password));
@@ -81,7 +86,7 @@ export class AuthService {
     };
   }
 
-  private signToken(user: JwtUser) {
+  private signToken(user: Pick<UserRecord, "id" | "email" | "role">): string {
     const payload: JwtUser = { id: user.id, email: user.email, role: user.role };
 
     return jwt.sign(payload, this.tokenOptions.secret, {

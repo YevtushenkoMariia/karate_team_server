@@ -50,9 +50,27 @@ Inside a module:
 6. **Side effects across modules go through events.** Example: `identity`
    publishes `UserRegistered`; `members` subscribes and creates the coach or
    sportsman record. `identity` does not know `members` exists.
+7. **Repository contracts use explicit DTOs.** Define DTOs in `*.api.ts` or
+   `*.types.ts` and annotate repository/service boundaries; Prisma select
+   inference stays an implementation detail.
 
 Rules 1–3 are checked automatically: `npm run check:boundaries`.
 When adding a table, register its owner in `scripts/check-boundaries.mjs`.
+
+## Cross-module transactions
+
+Use `runInTransaction(db, async (tx) => { ... })` from `shared` for atomic
+operations across repositories. Construct each participating repository with
+`tx`, not with the root `db`; repository constructors accept the shared
+`DbClient` type so the transaction client can be passed directly. The
+`updateProfile` unit of work binds identity, location, and member repositories
+to the same transaction.
+
+## Testing
+
+Run unit and HTTP integration tests with `npm test`. Unit tests use fake
+repositories; HTTP tests exercise the production app composition through
+Fastify's `app.inject()` with a test database in memory.
 
 ## Module dependencies
 
@@ -77,3 +95,10 @@ Each module already talks to others through an interface and an event bus.
 Extracting a module into a separate service means replacing its `*Api`
 implementation with an HTTP/RPC client and the `EventBus` with a message
 broker; callers do not change.
+
+## Authentication rate limits
+
+`POST /api/auth/login` allows 5 requests per IP every 15 minutes, and
+`POST /api/auth/register` allows 3 requests per IP per hour. Limits use the
+plugin's in-memory store per app instance; multi-instance deployments need a
+shared store to enforce one limit across instances.

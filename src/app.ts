@@ -2,8 +2,16 @@ import Fastify from "fastify";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import type { AppConfig } from "./config";
-import { authPlugin, createDb, errorHandler, EventBus, logger } from "./shared";
+import {
+  authPlugin,
+  createDb,
+  errorHandler,
+  EventBus,
+  logger,
+  type Db,
+} from "./shared";
 import { createIdentityModule } from "./modules/identity";
 import { createLocationsModule } from "./modules/locations";
 import { createMembersModule } from "./modules/members";
@@ -11,7 +19,10 @@ import { createGroupsModule } from "./modules/groups";
 
 // Composition root: the only place that knows about every module and wires
 // their dependencies together.
-export async function buildApp(config: AppConfig) {
+export async function buildApp(
+  config: AppConfig,
+  db: Db = createDb(config.databaseUrl),
+) {
   const app = Fastify({ logger: true });
 
   await app.register(swagger, {
@@ -40,6 +51,8 @@ export async function buildApp(config: AppConfig) {
     credentials: true,
   });
 
+  await app.register(rateLimit, { global: false });
+
   await app.register(swaggerUi, {
     routePrefix: "/docs",
     uiConfig: {
@@ -51,7 +64,6 @@ export async function buildApp(config: AppConfig) {
   await app.register(authPlugin, { jwtSecret: config.jwtSecret });
   app.setErrorHandler(errorHandler);
 
-  const db = createDb(config.databaseUrl);
   const events = new EventBus(logger);
   app.addHook("onClose", () => db.$disconnect());
 
