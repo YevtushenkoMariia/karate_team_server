@@ -1,4 +1,5 @@
 import type { role_type } from "../../../generated/prisma/client";
+import type { DbClient } from "../../shared";
 import { UpdateUserData, UsersRepository } from "./users.repository";
 
 export type UserSummary = {
@@ -17,6 +18,7 @@ export type { UpdateUserData };
 // Public contract of the identity module. Other modules use it instead of
 // touching the users table.
 export interface IdentityApi {
+  withTransaction(tx: DbClient): IdentityApi;
   findUserById(id: string): Promise<UserSummary | null>;
   /** Returns users in the same order as `ids`; unknown ids are skipped. */
   findUsersByIds(ids: string[]): Promise<UserSummary[]>;
@@ -25,6 +27,8 @@ export interface IdentityApi {
 
 export function createIdentityApi(users: UsersRepository): IdentityApi {
   return {
+    withTransaction: (tx) =>
+      createIdentityApi(new UsersRepository(tx)),
     findUserById: (id) => users.findSummaryById(id),
 
     async findUsersByIds(ids) {

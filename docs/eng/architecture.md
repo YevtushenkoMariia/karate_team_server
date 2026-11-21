@@ -59,7 +59,9 @@ When adding a table, register its owner in `scripts/check-boundaries.mjs`.
 Use `runInTransaction(db, async (tx) => { ... })` from `shared` for atomic
 operations across repositories. Construct each participating repository with
 `tx`, not with the root `db`; repository constructors accept the shared
-`DbClient` type so the transaction client can be passed directly.
+`DbClient` type so the transaction client can be passed directly. The
+`updateProfile` unit of work binds identity, location, and member repositories
+to the same transaction.
 
 ## Module dependencies
 

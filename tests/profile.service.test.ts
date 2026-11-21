@@ -10,6 +10,10 @@ import type {
 import type { LocationsApi } from "../src/modules/locations";
 import { BadRequestError } from "../src/shared";
 import { ProfileService } from "../src/modules/members/profile.service";
+import type {
+  ProfileTransactionRunner,
+  ProfileUnitOfWork,
+} from "../src/modules/members/profile.service";
 import type { SportsmanData } from "../src/modules/members/sportsmen.repository";
 import { UpdateProfileBody } from "../src/modules/members/profile.schemas";
 
@@ -35,6 +39,7 @@ function createService() {
   const createdClubs: Array<{ name: string; cityId: string | null }> = [];
 
   const identity: IdentityApi = {
+    withTransaction: () => identity,
     findUserById: async () => user,
     findUsersByIds: async () => [],
     updateUser: async (_userId, data) => {
@@ -42,6 +47,7 @@ function createService() {
     },
   };
   const locations: LocationsApi = {
+    withTransaction: () => locations,
     findCityById: async (id) => ({ id, name: id }),
     findClubById: async (id) => ({ id, name: id }),
     findOrCreateCity: async (name) => {
@@ -71,9 +77,17 @@ function createService() {
     findByUserId: async () => null,
     upsert: async () => {},
   };
+  const unitOfWork: ProfileUnitOfWork = {
+    identity,
+    locations,
+    sportsmen,
+    coaches,
+  };
+  const runProfileTransaction: ProfileTransactionRunner = async (operation) =>
+    operation(unitOfWork);
 
   return {
-    service: new ProfileService(identity, locations, sportsmen, coaches),
+    service: new ProfileService(unitOfWork, runProfileTransaction),
     updates,
     userUpdates,
     createdCities,

@@ -1,11 +1,21 @@
 import { FastifyInstance } from "fastify";
 import { role_type } from "../../../generated/prisma/client";
-import { authorize, type AppModule, type Db, type EventBus } from "../../shared";
+import {
+  authorize,
+  runInTransaction,
+  type AppModule,
+  type Db,
+  type EventBus,
+} from "../../shared";
 import { UserRegistered, type IdentityApi } from "../identity";
 import type { LocationsApi } from "../locations";
 import { SportsmenRepository } from "./sportsmen.repository";
 import { CoachesRepository } from "./coaches.repository";
-import { ProfileService } from "./profile.service";
+import {
+  ProfileService,
+  type ProfileTransactionRunner,
+  type ProfileUnitOfWork,
+} from "./profile.service";
 import { ProfileController } from "./profile.controller";
 import { MemberProfileParams, UpdateProfileBody } from "./profile.schemas";
 
@@ -19,11 +29,26 @@ type Deps = {
 export function createMembersModule(deps: Deps): AppModule {
   const sportsmen = new SportsmenRepository(deps.db);
   const coaches = new CoachesRepository(deps.db);
-  const profileService = new ProfileService(
-    deps.identity,
-    deps.locations,
+  const rootUnitOfWork: ProfileUnitOfWork = {
+    identity: deps.identity,
+    locations: deps.locations,
     sportsmen,
     coaches,
+  };
+
+  const runProfileTransaction: ProfileTransactionRunner = (operation) =>
+    runInTransaction(deps.db, (tx) =>
+      operation({
+        identity: deps.identity.withTransaction(tx),
+        locations: deps.locations.withTransaction(tx),
+        sportsmen: new SportsmenRepository(tx),
+        coaches: new CoachesRepository(tx),
+      }),
+    );
+    
+  const profileService = new ProfileService(
+    rootUnitOfWork,
+    runProfileTransaction,
   );
   const controller = new ProfileController(profileService);
 

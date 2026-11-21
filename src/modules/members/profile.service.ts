@@ -12,7 +12,7 @@ import { CoachesRepository } from "./coaches.repository";
 import { toKarateLevel, toSportsmanStatus } from "./karate";
 import { UpdateProfileBody } from "./profile.schemas";
 
-type SportsmanProfileStore = {
+export type SportsmanProfileStore = {
   findByUserId: (
     userId: string,
   ) => Promise<Awaited<ReturnType<SportsmenRepository["findByUserId"]>>>;
@@ -20,12 +20,23 @@ type SportsmanProfileStore = {
   isCoachOfSportsman: SportsmenRepository["isCoachOfSportsman"];
 };
 
-type CoachProfileStore = {
+export type CoachProfileStore = {
   findByUserId: (
     userId: string,
   ) => Promise<Awaited<ReturnType<CoachesRepository["findByUserId"]>>>;
   upsert: CoachesRepository["upsert"];
 };
+
+export type ProfileUnitOfWork = {
+  identity: IdentityApi;
+  locations: LocationsApi;
+  sportsmen: SportsmanProfileStore;
+  coaches: CoachProfileStore;
+};
+
+export type ProfileTransactionRunner = <T>(
+  operation: (unitOfWork: ProfileUnitOfWork) => Promise<T>,
+) => Promise<T>;
 
 function parseBirthDate(value?: string): Date | undefined {
   if (value === undefined) {
@@ -57,14 +68,12 @@ function parseBirthDate(value?: string): Date | undefined {
 
 export class ProfileService {
   constructor(
-    private readonly identity: IdentityApi,
-    private readonly locations: LocationsApi,
-    private readonly sportsmen: SportsmanProfileStore,
-    private readonly coaches: CoachProfileStore,
+    private readonly root: ProfileUnitOfWork,
+    private readonly runProfileTransaction: ProfileTransactionRunner,
   ) {}
 
   async getProfile(authUser: JwtUser) {
-    const user = await this.identity.findUserById(authUser.id);
+    const user = await this.root.identity.findUserById(authUser.id);
     if (!user) {
       throw new NotFoundError("User not found");
     }
@@ -77,7 +86,7 @@ export class ProfileService {
   }
 
   async getMemberProfile(authUser: JwtUser, memberId: string) {
-    const requester = await this.identity.findUserById(authUser.id);
+    const requester = await this.root.identity.findUserById(authUser.id);
     if (!requester) {
       throw new NotFoundError("User not found");
     }
@@ -86,7 +95,7 @@ export class ProfileService {
       throw new ForbiddenError("User role does not match");
     }
 
-    const member = await this.identity.findUserById(memberId);
+    const member = await this.root.identity.findUserById(memberId);
     if (!member) {
       throw new NotFoundError("User not found");
     }
@@ -95,7 +104,10 @@ export class ProfileService {
       requester.role === role_type.ADMIN ||
       (requester.role === role_type.COACH &&
         member.role === role_type.SPORTSMAN &&
-        (await this.sportsmen.isCoachOfSportsman(requester.id, member.id)));
+        (await this.root.sportsmen.isCoachOfSportsman(
+          requester.id,
+          member.id,
+        )));
 
     if (!canView) {
       throw new ForbiddenError("You cannot view this profile");
@@ -105,74 +117,81 @@ export class ProfileService {
   }
 
   async updateProfile(authUser: JwtUser, body: UpdateProfileBody) {
-    const user = await this.identity.findUserById(authUser.id);
-    if (!user) {
-      throw new NotFoundError("User not found");
-    }
+    return this.runProfileTransaction(async (unitOfWork) => {
+      const { identity, locations, sportsmen, coaches } = unitOfWork;
+      const user = await identity.findUserById(authUser.id);
+      if (!user) {
+        throw new NotFoundError("User not found");
+      }
 
-    if (user.role !== authUser.role) {
-      throw new ForbiddenError("User role does not match");
-    }
+      if (user.role !== authUser.role) {
+        throw new ForbiddenError("User role does not match");
+      }
 
-    // Validate enum-like input before writing anything.
-    const karateLevel = toKarateLevel(body.karate_level);
-    const sportsmanStatus = toSportsmanStatus(body.status);
-    const birthDate = parseBirthDate(body.birth_date);
+      // Validate enum-like input before writing anything.
+      const karateLevel = toKarateLevel(body.karate_level);
+      const sportsmanStatus = toSportsmanStatus(body.status);
+      const birthDate = parseBirthDate(body.birth_date);
 
-    const currentProfile = await this.findCurrentMemberProfile(
-      user.id,
-      user.role,
-    );
+      const currentProfile = await this.findCurrentMemberProfile(
+        user.id,
+        user.role,
+        unitOfWork,
+      );
 
-    await this.identity.updateUser(user.id, {
-      name: body.name,
-      surname: body.surname,
-      email: body.email,
-      gender: body.gender,
-      phone_number: body.phone_number,
-      birth_date: birthDate,
+      await identity.updateUser(user.id, {
+        name: body.name,
+        surname: body.surname,
+        email: body.email,
+        gender: body.gender,
+        phone_number: body.phone_number,
+        birth_date: birthDate,
+      });
+
+      const cityId =
+        body.city === undefined
+          ? (currentProfile?.city_id ?? null)
+          : body.city?.trim()
+            ? await locations.findOrCreateCity(body.city.trim())
+            : null;
+
+      const clubId =
+        body.club === undefined
+          ? (currentProfile?.club_id ?? null)
+          : body.club?.trim()
+            ? await locations.findOrCreateClub(body.club.trim(), cityId)
+            : null;
+
+      if (user.role === role_type.COACH) {
+        await coaches.upsert(user.id, {
+          city_id: cityId,
+          club_id: clubId,
+          karate_level: karateLevel,
+          position: body.position,
+          specialization: body.specialization,
+        });
+      } else if (user.role === role_type.SPORTSMAN) {
+        await sportsmen.upsert(user.id, {
+          city_id: cityId,
+          club_id: clubId,
+          karate_level: karateLevel,
+          status: sportsmanStatus,
+        });
+      }
+
+      const updatedUser = await identity.findUserById(user.id);
+      if (!updatedUser) {
+        throw new NotFoundError("User not found");
+      }
+
+      return this.buildProfile(updatedUser, unitOfWork);
     });
-
-    const cityId =
-      body.city === undefined
-        ? (currentProfile?.city_id ?? null)
-        : body.city?.trim()
-          ? await this.locations.findOrCreateCity(body.city.trim())
-          : null;
-
-    const clubId =
-      body.club === undefined
-        ? (currentProfile?.club_id ?? null)
-        : body.club?.trim()
-          ? await this.locations.findOrCreateClub(body.club.trim(), cityId)
-          : null;
-
-    if (user.role === role_type.COACH) {
-      await this.coaches.upsert(user.id, {
-        city_id: cityId,
-        club_id: clubId,
-        karate_level: karateLevel,
-        position: body.position,
-        specialization: body.specialization,
-      });
-    } else if (user.role === role_type.SPORTSMAN) {
-      await this.sportsmen.upsert(user.id, {
-        city_id: cityId,
-        club_id: clubId,
-        karate_level: karateLevel,
-        status: sportsmanStatus,
-      });
-    }
-
-    const updatedUser = await this.identity.findUserById(user.id);
-    if (!updatedUser) {
-      throw new NotFoundError("User not found");
-    }
-
-    return this.buildProfile(updatedUser);
   }
 
-  private async buildProfile(user: UserSummary) {
+  private async buildProfile(
+    user: UserSummary,
+    unitOfWork: ProfileUnitOfWork = this.root,
+  ) {
     const base = {
       id: user.id,
       name: user.name,
@@ -185,26 +204,32 @@ export class ProfileService {
     };
 
     if (user.role === role_type.COACH) {
-      const coach = await this.coaches.findByUserId(user.id);
+      const coach = await unitOfWork.coaches.findByUserId(user.id);
 
       return {
         ...base,
         karate_level: coach?.karate_level ?? null,
-        ...(await this.resolvePlaces(coach?.city_id, coach?.club_id)),
+        ...(await this.resolvePlaces(coach?.city_id, coach?.club_id, unitOfWork)),
         position: coach?.position ?? null,
         specialization: coach?.specialization ?? null,
       };
     }
 
     if (user.role === role_type.SPORTSMAN) {
-      const sportsman = await this.sportsmen.findByUserId(user.id);
+      const sportsman = await unitOfWork.sportsmen.findByUserId(user.id);
       const coachId = sportsman?.coach_sportsman[0]?.coach_id;
-      const coach = coachId ? await this.identity.findUserById(coachId) : null;
+      const coach = coachId
+        ? await unitOfWork.identity.findUserById(coachId)
+        : null;
 
       return {
         ...base,
         karate_level: sportsman?.karate_level ?? null,
-        ...(await this.resolvePlaces(sportsman?.city_id, sportsman?.club_id)),
+        ...(await this.resolvePlaces(
+          sportsman?.city_id,
+          sportsman?.club_id,
+          unitOfWork,
+        )),
         status: sportsman?.status ?? null,
         coach: coach
           ? { id: coach.id, name: coach.name, surname: coach.surname }
@@ -215,22 +240,30 @@ export class ProfileService {
     return base;
   }
 
-  private async findCurrentMemberProfile(userId: string, role: role_type) {
+  private async findCurrentMemberProfile(
+    userId: string,
+    role: role_type,
+    unitOfWork: ProfileUnitOfWork = this.root,
+  ) {
     if (role === role_type.COACH) {
-      return this.coaches.findByUserId(userId);
+      return unitOfWork.coaches.findByUserId(userId);
     }
 
     if (role === role_type.SPORTSMAN) {
-      return this.sportsmen.findByUserId(userId);
+      return unitOfWork.sportsmen.findByUserId(userId);
     }
 
     return null;
   }
 
-  private async resolvePlaces(cityId?: string | null, clubId?: string | null) {
+  private async resolvePlaces(
+    cityId?: string | null,
+    clubId?: string | null,
+    unitOfWork: ProfileUnitOfWork = this.root,
+  ) {
     const [city, club] = await Promise.all([
-      cityId ? this.locations.findCityById(cityId) : null,
-      clubId ? this.locations.findClubById(clubId) : null,
+      cityId ? unitOfWork.locations.findCityById(cityId) : null,
+      clubId ? unitOfWork.locations.findClubById(clubId) : null,
     ]);
 
     return { city, club };

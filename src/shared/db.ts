@@ -3,7 +3,7 @@ import { PrismaClient } from "../../generated/prisma/client";
 import type { Prisma } from "../../generated/prisma/client";
 
 export type Db = PrismaClient;
-export type DbClient = Prisma.TransactionClient;
+export type DbClient = Db | Prisma.TransactionClient;
 
 export function createDb(connectionString: string): Db {
   const adapter = new PrismaPg({ connectionString });

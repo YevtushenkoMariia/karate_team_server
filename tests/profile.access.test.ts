@@ -6,6 +6,10 @@ import type { LocationsApi } from "../src/modules/locations";
 import { ForbiddenError } from "../src/shared";
 import { ProfileService } from "../src/modules/members/profile.service";
 import type { SportsmanData } from "../src/modules/members/sportsmen.repository";
+import type {
+  ProfileTransactionRunner,
+  ProfileUnitOfWork,
+} from "../src/modules/members/profile.service";
 
 const makeUser = (id: string, role: role_type): UserSummary => ({
   id,
@@ -30,6 +34,7 @@ function createService(
   const userLookups: string[] = [];
 
   const identity: IdentityApi = {
+    withTransaction: () => identity,
     findUserById: async (id) => {
       userLookups.push(id);
       return users.get(id) ?? null;
@@ -38,6 +43,7 @@ function createService(
     updateUser: async () => {},
   };
   const locations: LocationsApi = {
+    withTransaction: () => locations,
     findCityById: async () => null,
     findClubById: async () => null,
     findOrCreateCity: async () => "city-id",
@@ -61,9 +67,17 @@ function createService(
     findByUserId: async () => null,
     upsert: async () => {},
   };
+  const unitOfWork: ProfileUnitOfWork = {
+    identity,
+    locations,
+    sportsmen,
+    coaches,
+  };
+  const runProfileTransaction: ProfileTransactionRunner = async (operation) =>
+    operation(unitOfWork);
 
   return {
-    service: new ProfileService(identity, locations, sportsmen, coaches),
+    service: new ProfileService(unitOfWork, runProfileTransaction),
     userLookups,
   };
 }
