@@ -6,10 +6,13 @@ import { GroupsRepository } from "./groups.repository";
 import { GroupsService } from "./groups.service";
 import { GroupsController } from "./groups.controller";
 import {
+  CreateGroupBody,
   GetGroupQuery,
   GroupParams,
   JoinGroupBody,
   ListGroupsQuery,
+  MemberParams,
+  UpdateGroupBody,
   UserParams,
 } from "./groups.schemas";
 
@@ -39,6 +42,12 @@ export function createGroupsModule(deps: Deps): AppModule {
         handler: controller.getUserGroups,
       });
 
+      fastify.post("/", {
+        schema: { params: UserParams, body: CreateGroupBody, security },
+        onRequest,
+        handler: controller.createGroup,
+      });
+
       fastify.post("/join", {
         schema: { params: UserParams, body: JoinGroupBody, security },
         onRequest,
@@ -55,6 +64,28 @@ export function createGroupsModule(deps: Deps): AppModule {
         schema: { params: GroupParams, security },
         onRequest,
         handler: controller.getGroupMembers,
+      });
+
+      fastify.put("/:groupId", {
+        schema: {
+          params: GroupParams,
+          body: UpdateGroupBody,
+          security,
+        },
+        onRequest,
+        handler: controller.updateGroup,
+      });
+
+      fastify.delete("/:groupId", {
+        schema: { params: GroupParams, security },
+        onRequest,
+        handler: controller.deleteGroup,
+      });
+
+      fastify.delete("/:groupId/members/:memberId", {
+        schema: { params: MemberParams, security },
+        onRequest,
+        handler: controller.removeMember,
       });
     },
   };

@@ -13,6 +13,14 @@ type TestUser = {
   birth_date: Date | null;
 };
 
+type TestGroup = {
+  id: string;
+  name: string;
+  description: string | null;
+  code: string;
+  author_id: string;
+};
+
 const existingMemberId = "00000000-0000-4000-8000-000000000002";
 
 export function createTestDb(): Db {
@@ -33,8 +41,22 @@ export function createTestDb(): Db {
     ],
   ]);
   const sportsmenByUserId = new Map<string, Record<string, unknown>>();
+  const groupsById = new Map<string, TestGroup>();
+  const memberships = new Set<string>();
   let nextUserId = 3;
+  let nextGroupId = 1;
   let db: Db;
+
+  const membershipKey = (userId: string, groupId: string) =>
+    `${userId}:${groupId}`;
+  const withMemberCount = (group: TestGroup) => ({
+    ...group,
+    _count: {
+      users_groups: [...memberships].filter((membership) =>
+        membership.endsWith(`:${group.id}`),
+      ).length,
+    },
+  });
 
   const testDb = {
     $disconnect: async () => {},
@@ -115,6 +137,112 @@ export function createTestDb(): Db {
     },
     coach_sportsman: {
       findFirst: async () => null,
+    },
+    groups: {
+      findMany: async ({
+        where,
+      }: {
+        where: { users_groups: { some: { user_id: string } } };
+      }) =>
+        [...groupsById.values()]
+          .filter((group) =>
+            memberships.has(membershipKey(where.users_groups.some.user_id, group.id)),
+          )
+          .map(withMemberCount),
+      findUnique: async ({
+        where,
+      }: {
+        where: { id?: string; code?: string };
+      }) => {
+        const group = where.id
+          ? groupsById.get(where.id)
+          : [...groupsById.values()].find((item) => item.code === where.code);
+        return group ? withMemberCount(group) : null;
+      },
+      create: async ({
+        data,
+      }: {
+        data: {
+          name: string;
+          description?: string;
+          code: string;
+          author_id: string;
+          users_groups: { create: { user_id: string } };
+        };
+      }) => {
+        const group: TestGroup = {
+          id: `00000000-0000-4000-8000-${String(nextGroupId++).padStart(12, "0")}`,
+          name: data.name,
+          description: data.description ?? null,
+          code: data.code,
+          author_id: data.author_id,
+        };
+        groupsById.set(group.id, group);
+        memberships.add(
+          membershipKey(data.users_groups.create.user_id, group.id),
+        );
+        return withMemberCount(group);
+      },
+      update: async ({
+        where,
+        data,
+      }: {
+        where: { id: string };
+        data: { name?: string; description?: string | null };
+      }) => {
+        const group = groupsById.get(where.id);
+        if (!group) {
+          throw new Error("Test group not found");
+        }
+        Object.assign(group, data);
+        return withMemberCount(group);
+      },
+      delete: async ({ where }: { where: { id: string } }) => {
+        const group = groupsById.get(where.id);
+        if (!group) {
+          throw new Error("Test group not found");
+        }
+        groupsById.delete(where.id);
+        for (const membership of memberships) {
+          if (membership.endsWith(`:${where.id}`)) {
+            memberships.delete(membership);
+          }
+        }
+        return group;
+      },
+    },
+    users_groups: {
+      findUnique: async ({
+        where,
+      }: {
+        where: { user_id_group_id: { user_id: string; group_id: string } };
+      }) => {
+        const { user_id, group_id } = where.user_id_group_id;
+        return memberships.has(membershipKey(user_id, group_id))
+          ? { user_id }
+          : null;
+      },
+      create: async ({
+        data,
+      }: {
+        data: { user_id: string; group_id: string };
+      }) => {
+        memberships.add(membershipKey(data.user_id, data.group_id));
+        return data;
+      },
+      findMany: async ({ where }: { where: { group_id: string } }) =>
+        [...memberships]
+          .filter((membership) => membership.endsWith(`:${where.group_id}`))
+          .map((membership) => ({ user_id: membership.split(":")[0]! })),
+      delete: async ({
+        where,
+      }: {
+        where: { user_id_group_id: { user_id: string; group_id: string } };
+      }) => {
+        const { user_id, group_id } = where.user_id_group_id;
+        memberships.delete(membershipKey(user_id, group_id));
+        return { user_id, group_id };
+      },
     },
   };
 
