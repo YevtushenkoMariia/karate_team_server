@@ -11,10 +11,23 @@ the shadow schema.
 
 ## Production re-baseline
 
-Back up production and verify its tables, columns, enum values, indexes, and
-UUID types match the baseline before baselining. The old migrations were
-already applied in production, so `prisma migrate resolve --applied 0_init`
-alone is not sufficient: it adds a baseline record but does not remove or
-reconcile the old records in `_prisma_migrations`. Reconcile that history as a
-separate, reviewed production operation before using `migrate deploy`. Do not
-run the old migration SQL against the existing database.
+Back up production and compare its schema with the baseline and all subsequent
+migrations before changing migration history. A baseline is recorded, not
+executed, on an existing database:
+
+```powershell
+npx prisma migrate resolve --applied 0_init
+```
+
+Afterward, `prisma migrate status` can report successful historical migrations
+that are no longer present in the squashed local migrations directory. Keep
+those database history records; do not delete them. If the baseline is the last
+common migration and the only pending migrations are the intended new changes,
+apply them with:
+
+```powershell
+npx prisma migrate deploy
+```
+
+Do not run the baseline SQL or old migration SQL against an existing database.
+Use a backup and review the schema diff before resolving or deploying.
