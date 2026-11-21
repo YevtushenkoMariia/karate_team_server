@@ -1,4 +1,4 @@
-import type { Db } from "../../shared";
+import type { DbClient } from "../../shared";
 import type {
   karate_level_type,
   sportsman_role_type,
@@ -12,7 +12,7 @@ export type SportsmanData = {
 };
 
 export class SportsmenRepository {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: DbClient) {}
 
   async ensureExists(userId: string) {
     await this.db.sportsmen.upsert({

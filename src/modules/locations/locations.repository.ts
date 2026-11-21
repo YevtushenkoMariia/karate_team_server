@@ -1,9 +1,9 @@
-import type { Db } from "../../shared";
+import type { DbClient } from "../../shared";
 
 const placeSelect = { id: true, name: true } as const;
 
 export class LocationsRepository {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: DbClient) {}
 
   findAllCities() {
     return this.db.cities.findMany({ select: placeSelect });

@@ -1,4 +1,4 @@
-import type { Db } from "../../shared";
+import type { DbClient } from "../../shared";
 import type { role_type } from "../../../generated/prisma/client";
 
 const userSummarySelect = {
@@ -22,7 +22,7 @@ export type UpdateUserData = {
 };
 
 export class UsersRepository {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: DbClient) {}
 
   create(data: {
     name: string;

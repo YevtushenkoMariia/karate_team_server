@@ -1,4 +1,4 @@
-import type { Db } from "../../shared";
+import type { DbClient } from "../../shared";
 import type { karate_level_type } from "../../../generated/prisma/client";
 
 export type CoachData = {
@@ -10,7 +10,7 @@ export type CoachData = {
 };
 
 export class CoachesRepository {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: DbClient) {}
 
   async ensureExists(userId: string) {
     await this.db.coaches.upsert({

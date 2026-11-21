@@ -1,7 +1,7 @@
-import type { Db } from "../../shared";
+import type { DbClient } from "../../shared";
 
 export class GroupsRepository {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: DbClient) {}
 
   findGroupsOfUser(userId: string) {
     return this.db.groups.findMany({

@@ -1,5 +1,5 @@
-export { createDb } from "./db";
-export type { Db } from "./db";
+export { createDb, runInTransaction } from "./db";
+export type { Db, DbClient } from "./db";
 export {
   AppError,
   BadRequestError,

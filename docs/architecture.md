@@ -54,6 +54,13 @@ Inside a module:
 Rules 1–3 are checked automatically: `npm run check:boundaries`.
 When adding a table, register its owner in `scripts/check-boundaries.mjs`.
 
+## Cross-module transactions
+
+Use `runInTransaction(db, async (tx) => { ... })` from `shared` for atomic
+operations across repositories. Construct each participating repository with
+`tx`, not with the root `db`; repository constructors accept the shared
+`DbClient` type so the transaction client can be passed directly.
+
 ## Module dependencies
 
 ```
