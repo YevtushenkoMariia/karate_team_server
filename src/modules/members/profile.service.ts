@@ -1,5 +1,10 @@
 import { role_type } from "../../../generated/prisma/client";
-import { ForbiddenError, JwtUser, NotFoundError } from "../../shared";
+import {
+  BadRequestError,
+  ForbiddenError,
+  JwtUser,
+  NotFoundError,
+} from "../../shared";
 import type { IdentityApi, UserSummary } from "../identity";
 import type { LocationsApi } from "../locations";
 import { SportsmenRepository } from "./sportsmen.repository";
@@ -21,6 +26,34 @@ type CoachProfileStore = {
   ) => Promise<Awaited<ReturnType<CoachesRepository["findByUserId"]>>>;
   upsert: CoachesRepository["upsert"];
 };
+
+function parseBirthDate(value?: string): Date | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== value
+  ) {
+    throw new BadRequestError("birth_date must be a valid date in YYYY-MM-DD format");
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const earliest = new Date(`${today}T00:00:00.000Z`);
+  earliest.setUTCFullYear(earliest.getUTCFullYear() - 120);
+  const earliestDate = earliest.toISOString().slice(0, 10);
+
+  if (value < earliestDate || value > today) {
+    throw new BadRequestError(
+      `birth_date must be between ${earliestDate} and ${today}`,
+    );
+  }
+
+  return date;
+}
 
 export class ProfileService {
   constructor(
@@ -84,6 +117,7 @@ export class ProfileService {
     // Validate enum-like input before writing anything.
     const karateLevel = toKarateLevel(body.karate_level);
     const sportsmanStatus = toSportsmanStatus(body.status);
+    const birthDate = parseBirthDate(body.birth_date);
 
     const currentProfile = await this.findCurrentMemberProfile(
       user.id,
@@ -96,7 +130,7 @@ export class ProfileService {
       email: body.email,
       gender: body.gender,
       phone_number: body.phone_number,
-      birth_date: body.birth_date ? new Date(body.birth_date) : undefined,
+      birth_date: birthDate,
     });
 
     const cityId =

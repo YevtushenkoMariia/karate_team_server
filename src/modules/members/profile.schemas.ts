@@ -10,7 +10,7 @@ export const UpdateProfileBody = Type.Object({
   email: Type.Optional(Type.String()),
   gender: Type.Optional(Type.String()),
   phone_number: Type.Optional(Type.String()),
-  birth_date: Type.Optional(Type.String()),
+  birth_date: Type.Optional(Type.String({ format: "date" })),
   city: Type.Optional(Type.Union([Type.String(), Type.Null()])),
   club: Type.Optional(Type.Union([Type.String(), Type.Null()])),
   karate_level: Type.Optional(Type.String()),
