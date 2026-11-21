@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import type { AppConfig } from "./config";
 import {
   authPlugin,
@@ -49,6 +50,8 @@ export async function buildApp(
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   });
+
+  await app.register(rateLimit, { global: false });
 
   await app.register(swaggerUi, {
     routePrefix: "/docs",

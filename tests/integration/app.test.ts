@@ -27,6 +27,7 @@ describe("HTTP integration via app.inject()", () => {
     const registration = await server.inject({
       method: "POST",
       url: "/api/auth/register",
+      remoteAddress: "192.0.2.1",
       payload: {
         role: "SPORTSMAN",
         name: "Test",
@@ -80,6 +81,7 @@ describe("HTTP integration via app.inject()", () => {
       const response = await server.inject({
         method: "POST",
         url: "/api/auth/register",
+        remoteAddress: "192.0.2.2",
         payload: {
           role,
           name: role,
@@ -185,5 +187,50 @@ describe("HTTP integration via app.inject()", () => {
       headers: coachHeaders,
     });
     expect(missing.statusCode).toBe(404);
+  });
+
+  it("applies separate per-IP limits to login and registration", async () => {
+    const server = await app;
+    const loginAttempt = () =>
+      server.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        remoteAddress: "192.0.2.3",
+        payload: {
+          email: "missing@example.com",
+          password: "password123",
+        },
+      });
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      expect((await loginAttempt()).statusCode).toBe(401);
+    }
+    expect((await loginAttempt()).statusCode).toBe(429);
+
+    const registrationPayload = (email: string) => ({
+      role: "ADMIN",
+      name: "Rate",
+      surname: "Limited",
+      email,
+      password: "password123",
+      confirmPassword: "password123",
+    });
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const response = await server.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        remoteAddress: "192.0.2.4",
+        payload: registrationPayload(`ratelimit-${attempt}@example.com`),
+      });
+      expect(response.statusCode).toBe(201);
+    }
+
+    const blockedRegistration = await server.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      remoteAddress: "192.0.2.4",
+      payload: registrationPayload("ratelimit-blocked@example.com"),
+    });
+    expect(blockedRegistration.statusCode).toBe(429);
   });
 });

@@ -95,3 +95,10 @@ Each module already talks to others through an interface and an event bus.
 Extracting a module into a separate service means replacing its `*Api`
 implementation with an HTTP/RPC client and the `EventBus` with a message
 broker; callers do not change.
+
+## Authentication rate limits
+
+`POST /api/auth/login` allows 5 requests per IP every 15 minutes, and
+`POST /api/auth/register` allows 3 requests per IP per hour. Limits use the
+plugin's in-memory store per app instance; multi-instance deployments need a
+shared store to enforce one limit across instances.
