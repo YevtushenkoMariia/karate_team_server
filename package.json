@@ -8,7 +8,7 @@
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit",
     "check:boundaries": "node scripts/check-boundaries.mjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsx --test tests/karate.test.ts"
   },
   "keywords": [],
   "author": "",
