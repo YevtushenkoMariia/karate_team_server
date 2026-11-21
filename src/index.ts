@@ -1,34 +1,17 @@
-import Fastify from "fastify";
-import { athleteRoutes as sportsmenRoutes } from "./routes/sportsmens";
-import swagger from "@fastify/swagger";
-import swaggerUi from "@fastify/swagger-ui";
+import "dotenv/config";
+import { loadConfig } from "./config";
+import { buildApp } from "./app";
 
+const startServer = async () => {
+  const config = loadConfig();
+  const app = await buildApp(config);
 
-export async function buildApp() {
-  const app = Fastify({
-    logger: true
-  });
+  try {
+    await app.listen({ port: config.port, host: "0.0.0.0" });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+};
 
-  await app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Karate Team API",
-        description: "API для управління спортсменами, тренерами та командами",
-        version: "1.0.0",
-      },
-      servers: [{ url: "http://localhost:4000", description: "Local server" }],
-    },
-  });
-
-  await app.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "list",
-      deepLinking: false,
-    },
-  });
-
-  app.register(sportsmenRoutes, { prefix: "/api/athletes" });
-
-  return app;
-}
+startServer();
