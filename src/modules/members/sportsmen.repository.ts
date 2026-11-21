@@ -1,20 +1,13 @@
 import type { DbClient } from "../../shared";
 import type {
-  karate_level_type,
-  sportsman_role_type,
-} from "../../../generated/prisma/client";
-
-export type SportsmanData = {
-  city_id: string | null;
-  club_id: string | null;
-  karate_level?: karate_level_type;
-  status?: sportsman_role_type;
-};
+  SportsmanData,
+  SportsmanProfileRecord,
+} from "./members.types";
 
 export class SportsmenRepository {
   constructor(private readonly db: DbClient) {}
 
-  async ensureExists(userId: string) {
+  async ensureExists(userId: string): Promise<void> {
     await this.db.sportsmen.upsert({
       where: { user_id: userId },
       update: {},
@@ -22,7 +15,7 @@ export class SportsmenRepository {
     });
   }
 
-  async upsert(userId: string, data: SportsmanData) {
+  async upsert(userId: string, data: SportsmanData): Promise<void> {
     await this.db.sportsmen.upsert({
       where: { user_id: userId },
       update: data,
@@ -30,7 +23,10 @@ export class SportsmenRepository {
     });
   }
 
-  async isCoachOfSportsman(coachId: string, sportsmanId: string) {
+  async isCoachOfSportsman(
+    coachId: string,
+    sportsmanId: string,
+  ): Promise<boolean> {
     const assignment = await this.db.coach_sportsman.findFirst({
       where: { coach_id: coachId, sportsman_id: sportsmanId },
       select: { coach_id: true },
@@ -39,7 +35,7 @@ export class SportsmenRepository {
     return assignment !== null;
   }
 
-  findByUserId(userId: string) {
+  findByUserId(userId: string): Promise<SportsmanProfileRecord | null> {
     return this.db.sportsmen.findUnique({
       where: { user_id: userId },
       select: {

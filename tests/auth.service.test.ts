@@ -1,10 +1,17 @@
 import bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { role_type } from "../generated/prisma/client";
-import { AuthService, type AuthUserStore } from "../src/modules/identity/auth.service";
+import {
+  role_type,
+  user_status_type,
+} from "../generated/prisma/client";
+import { AuthService } from "../src/modules/identity/auth.service";
 import { RegisterBody } from "../src/modules/identity/auth.schemas";
 import { UserRegistered } from "../src/modules/identity/identity.events";
+import type {
+  AuthUserStore,
+  CreateUserData,
+} from "../src/modules/identity/identity.types";
 import { BadRequestError, EventBus, logger, UnauthorizedError } from "../src/shared";
 
 const secret = "unit-test-secret";
@@ -19,10 +26,19 @@ const registration: RegisterBody = {
 
 function createService() {
   let savedUser: Awaited<ReturnType<AuthUserStore["findByEmail"]>> = null;
-  const create = vi.fn(async (data: Parameters<AuthUserStore["create"]>[0]) => {
+  let createdPassword: string | undefined;
+  const create = vi.fn(async (data: CreateUserData) => {
+    createdPassword = data.password;
     savedUser = {
       ...data,
       id: "00000000-0000-4000-8000-000000000001",
+      gender: null,
+      phone_number: null,
+      birth_date: null,
+      status: user_status_type.VERIFYING,
+      created_at: new Date(),
+      updated_at: new Date(),
+      email_verified: false,
     };
     return savedUser;
   });
@@ -36,7 +52,7 @@ function createService() {
     expiresIn: "1h",
   });
 
-  return { service, store, events, create };
+  return { service, store, events, create, getCreatedPassword: () => createdPassword };
 }
 
 describe("AuthService", () => {
@@ -45,7 +61,7 @@ describe("AuthService", () => {
   });
 
   it("registers a user with a hashed password and publishes the event", async () => {
-    const { service, events, create } = createService();
+    const { service, events, create, getCreatedPassword } = createService();
     const published: Array<{ userId: string; role: role_type }> = [];
     events.subscribe(UserRegistered, (event) => {
       published.push(event);
@@ -54,8 +70,10 @@ describe("AuthService", () => {
     const result = await service.register(registration);
 
     expect(create).toHaveBeenCalledOnce();
-    const storedPassword = create.mock.calls[0]?.[0].password;
-    expect(storedPassword).toBeDefined();
+    const storedPassword = getCreatedPassword();
+    if (!storedPassword) {
+      throw new Error("User was created without a password hash");
+    }
     expect(await bcrypt.compare(registration.password, storedPassword)).toBe(true);
     expect(result.user).not.toHaveProperty("password");
     expect(jwt.verify(result.token, secret)).toMatchObject({

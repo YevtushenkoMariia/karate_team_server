@@ -1,18 +1,10 @@
 import type { DbClient } from "../../shared";
-import type { karate_level_type } from "../../../generated/prisma/client";
-
-export type CoachData = {
-  city_id: string | null;
-  club_id: string | null;
-  karate_level?: karate_level_type;
-  position?: string;
-  specialization?: string;
-};
+import type { CoachData, CoachProfileRecord } from "./members.types";
 
 export class CoachesRepository {
   constructor(private readonly db: DbClient) {}
 
-  async ensureExists(userId: string) {
+  async ensureExists(userId: string): Promise<void> {
     await this.db.coaches.upsert({
       where: { user_id: userId },
       update: {},
@@ -20,7 +12,7 @@ export class CoachesRepository {
     });
   }
 
-  async upsert(userId: string, data: CoachData) {
+  async upsert(userId: string, data: CoachData): Promise<void> {
     await this.db.coaches.upsert({
       where: { user_id: userId },
       update: data,
@@ -28,7 +20,7 @@ export class CoachesRepository {
     });
   }
 
-  findByUserId(userId: string) {
+  findByUserId(userId: string): Promise<CoachProfileRecord | null> {
     return this.db.coaches.findUnique({
       where: { user_id: userId },
       select: {

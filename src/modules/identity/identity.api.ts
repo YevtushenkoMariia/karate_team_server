@@ -1,19 +1,8 @@
-import type { role_type } from "../../../generated/prisma/client";
 import type { DbClient } from "../../shared";
-import { UpdateUserData, UsersRepository } from "./users.repository";
+import type { UpdateUserData, UserSummary } from "./identity.types";
+import { UsersRepository } from "./users.repository";
 
-export type UserSummary = {
-  id: string;
-  name: string;
-  surname: string;
-  email: string;
-  role: role_type;
-  gender: string | null;
-  phone_number: string | null;
-  birth_date: Date | null;
-};
-
-export type { UpdateUserData };
+export type { UpdateUserData, UserSummary } from "./identity.types";
 
 // Public contract of the identity module. Other modules use it instead of
 // touching the users table.

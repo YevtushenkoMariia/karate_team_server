@@ -4,7 +4,7 @@ import type { IdentityApi, UserSummary } from "../src/modules/identity";
 import type { LocationsApi } from "../src/modules/locations";
 import { ForbiddenError } from "../src/shared";
 import { ProfileService } from "../src/modules/members/profile.service";
-import type { SportsmanData } from "../src/modules/members/sportsmen.repository";
+import type { SportsmanData } from "../src/modules/members/members.types";
 import type {
   ProfileTransactionRunner,
   ProfileUnitOfWork,

@@ -9,6 +9,13 @@ import {
 import type { IdentityApi, UserSummary } from "../identity";
 import { GroupsRepository } from "./groups.repository";
 import type { CreateGroupBody, UpdateGroupBody } from "./groups.schemas";
+import type {
+  GroupDetailsDto,
+  GroupAuthorDto,
+  GroupListDto,
+  GroupMemberDto,
+  GroupRecordDto,
+} from "./groups.types";
 
 export class GroupsService {
   constructor(
@@ -16,7 +23,7 @@ export class GroupsService {
     private readonly identity: IdentityApi,
   ) {}
 
-  async getUserGroups(userId: string, role: string) {
+  async getUserGroups(userId: string, role: string): Promise<GroupListDto[]> {
     await this.assertUser(userId, role);
 
     const groups = await this.groups.findGroupsOfUser(userId);
@@ -31,12 +38,16 @@ export class GroupsService {
     }));
   }
 
-  async getGroup(userId: string, groupId: string, role?: string) {
+  async getGroup(
+    userId: string,
+    groupId: string,
+    role?: string,
+  ): Promise<GroupDetailsDto> {
     await this.assertUser(userId, role);
     return this.getGroupDetails(groupId);
   }
 
-  async joinGroup(userId: string, code: string) {
+  async joinGroup(userId: string, code: string): Promise<GroupDetailsDto> {
     await this.assertUser(userId);
 
     const normalizedCode = code.trim().toUpperCase();
@@ -58,7 +69,10 @@ export class GroupsService {
     return this.getGroupDetails(group.id);
   }
 
-  async getGroupMembers(userId: string, groupId: string) {
+  async getGroupMembers(
+    userId: string,
+    groupId: string,
+  ): Promise<GroupMemberDto[]> {
     await this.assertUser(userId);
 
     if (!(await this.groups.findById(groupId))) {
@@ -85,7 +99,7 @@ export class GroupsService {
     userId: string,
     role: string,
     data: CreateGroupBody,
-  ) {
+  ): Promise<GroupDetailsDto> {
     const author = await this.assertGroupManager(userId, role);
     const code = await this.generateCode();
     const group = await this.groups.create({
@@ -102,7 +116,7 @@ export class GroupsService {
     role: string,
     groupId: string,
     data: UpdateGroupBody,
-  ) {
+  ): Promise<GroupDetailsDto> {
     if (data.name === undefined && data.description === undefined) {
       throw new BadRequestError("At least one group field must be provided");
     }
@@ -114,7 +128,11 @@ export class GroupsService {
     return this.toGroup(group, authors);
   }
 
-  async deleteGroup(userId: string, role: string, groupId: string) {
+  async deleteGroup(
+    userId: string,
+    role: string,
+    groupId: string,
+  ): Promise<void> {
     await this.assertGroupOwnerOrAdmin(userId, role, groupId);
     await this.groups.delete(groupId);
   }
@@ -124,7 +142,7 @@ export class GroupsService {
     role: string,
     groupId: string,
     memberId: string,
-  ) {
+  ): Promise<void> {
     const actor = await this.assertUser(actorId, role);
     const group = await this.groups.findById(groupId);
     if (!group) {
@@ -146,7 +164,9 @@ export class GroupsService {
     await this.groups.removeMember(memberId, groupId);
   }
 
-  private async getGroupDetails(groupId: string) {
+  private async getGroupDetails(
+    groupId: string,
+  ): Promise<GroupDetailsDto> {
     const group = await this.groups.findById(groupId);
     if (!group) {
       throw new NotFoundError("Group not found");
@@ -209,9 +229,9 @@ export class GroupsService {
   }
 
   private toGroup(
-    group: NonNullable<Awaited<ReturnType<GroupsRepository["findById"]>>>,
+    group: GroupRecordDto,
     authors: Map<string, UserSummary>,
-  ) {
+  ): GroupDetailsDto {
     return {
       id: group.id,
       name: group.name,
@@ -222,14 +242,19 @@ export class GroupsService {
     };
   }
 
-  private async findAuthors(authorIds: (string | null)[]) {
+  private async findAuthors(
+    authorIds: (string | null)[],
+  ): Promise<Map<string, UserSummary>> {
     const ids = [...new Set(authorIds.filter((id): id is string => id !== null))];
     const authors = await this.identity.findUsersByIds(ids);
 
     return new Map(authors.map((author) => [author.id, author]));
   }
 
-  private toAuthor(authors: Map<string, UserSummary>, authorId: string | null) {
+  private toAuthor(
+    authors: Map<string, UserSummary>,
+    authorId: string | null,
+  ): GroupAuthorDto {
     const author = authorId ? authors.get(authorId) : undefined;
     return { name: author?.name, surname: author?.surname };
   }

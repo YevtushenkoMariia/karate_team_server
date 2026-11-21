@@ -1,28 +1,29 @@
 import type { DbClient } from "../../shared";
+import type { ClubLocation, Place, PlaceId } from "./locations.types";
 
 const placeSelect = { id: true, name: true } as const;
 
 export class LocationsRepository {
   constructor(private readonly db: DbClient) {}
 
-  findAllCities() {
+  findAllCities(): Promise<Place[]> {
     return this.db.cities.findMany({ select: placeSelect });
   }
 
-  findAllClubs() {
+  findAllClubs(): Promise<Place[]> {
     return this.db.clubs.findMany({ select: placeSelect });
   }
 
-  findCityById(id: string) {
+  findCityById(id: string): Promise<Place | null> {
     return this.db.cities.findUnique({ where: { id }, select: placeSelect });
   }
 
-  findClubById(id: string) {
+  findClubById(id: string): Promise<Place | null> {
     return this.db.clubs.findUnique({ where: { id }, select: placeSelect });
   }
 
-  async findOrCreateCity(cityName: string) {
-    const existingCity = await this.db.cities.findFirst({
+  async findOrCreateCity(cityName: string): Promise<string> {
+    const existingCity: PlaceId | null = await this.db.cities.findFirst({
       where: { name: { equals: cityName, mode: "insensitive" } },
       select: { id: true },
     });
@@ -31,7 +32,7 @@ export class LocationsRepository {
       return existingCity.id;
     }
 
-    const createdCity = await this.db.cities.create({
+    const createdCity: PlaceId = await this.db.cities.create({
       data: { name: cityName },
       select: { id: true },
     });
@@ -39,8 +40,11 @@ export class LocationsRepository {
     return createdCity.id;
   }
 
-  async findOrCreateClub(clubName: string, cityId: string | null) {
-    const existingClub = await this.db.clubs.findFirst({
+  async findOrCreateClub(
+    clubName: string,
+    cityId: string | null,
+  ): Promise<string> {
+    const existingClub: ClubLocation | null = await this.db.clubs.findFirst({
       where: { name: { equals: clubName, mode: "insensitive" } },
       select: { id: true, city_id: true },
     });
@@ -55,7 +59,7 @@ export class LocationsRepository {
       return existingClub.id;
     }
 
-    const createdClub = await this.db.clubs.create({
+    const createdClub: PlaceId = await this.db.clubs.create({
       data: {
         name: clubName,
         city_id: cityId ?? undefined,

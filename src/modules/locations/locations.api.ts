@@ -1,10 +1,9 @@
 import { LocationsRepository } from "./locations.repository";
 import type { DbClient } from "../../shared";
 
-export type Place = {
-  id: string;
-  name: string;
-};
+import type { Place } from "./locations.types";
+
+export type { Place } from "./locations.types";
 
 // Public contract of the locations module. Other modules depend on this
 // interface only, never on the repository or the cities/clubs tables.

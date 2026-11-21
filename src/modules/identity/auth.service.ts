@@ -8,24 +8,14 @@ import {
   logger,
   UnauthorizedError,
 } from "../../shared";
-import type { UsersRepository } from "./users.repository";
+import type {
+  AuthUserStore,
+  LoginResult,
+  RegisterResult,
+  UserRecord,
+} from "./identity.types";
 import { UserRegistered } from "./identity.events";
 import { LoginBody, RegisterBody } from "./auth.schemas";
-import type { role_type } from "../../../generated/prisma/client";
-
-type AuthUser = {
-  id: string;
-  email: string;
-  name: string;
-  surname: string;
-  password: string;
-  role: role_type;
-};
-
-export type AuthUserStore = {
-  findByEmail(email: string): Promise<AuthUser | null>;
-  create(data: Parameters<UsersRepository["create"]>[0]): Promise<AuthUser>;
-};
 
 type TokenOptions = {
   secret: string;
@@ -39,7 +29,7 @@ export class AuthService {
     private readonly tokenOptions: TokenOptions,
   ) {}
 
-  async register(data: RegisterBody) {
+  async register(data: RegisterBody): Promise<RegisterResult> {
     if (data.password !== data.confirmPassword) {
       throw new BadRequestError("Passwords do not match");
     }
@@ -73,7 +63,7 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginBody) {
+  async login(data: LoginBody): Promise<LoginResult> {
     const user = await this.users.findByEmail(data.email);
     const isPasswordValid =
       user !== null && (await bcrypt.compare(data.password, user.password));
@@ -96,7 +86,7 @@ export class AuthService {
     };
   }
 
-  private signToken(user: JwtUser) {
+  private signToken(user: Pick<UserRecord, "id" | "email" | "role">): string {
     const payload: JwtUser = { id: user.id, email: user.email, role: user.role };
 
     return jwt.sign(payload, this.tokenOptions.secret, {

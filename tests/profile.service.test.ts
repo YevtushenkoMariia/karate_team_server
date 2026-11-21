@@ -13,7 +13,7 @@ import type {
   ProfileTransactionRunner,
   ProfileUnitOfWork,
 } from "../src/modules/members/profile.service";
-import type { SportsmanData } from "../src/modules/members/sportsmen.repository";
+import type { SportsmanData } from "../src/modules/members/members.types";
 import { UpdateProfileBody } from "../src/modules/members/profile.schemas";
 
 const user: UserSummary = {

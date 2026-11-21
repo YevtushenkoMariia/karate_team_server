@@ -6,25 +6,27 @@ import {
   NotFoundError,
 } from "../../shared";
 import type { IdentityApi, UserSummary } from "../identity";
-import type { LocationsApi } from "../locations";
-import { SportsmenRepository } from "./sportsmen.repository";
-import { CoachesRepository } from "./coaches.repository";
+import type { LocationsApi, Place } from "../locations";
+import type {
+  CoachData,
+  CoachProfileRecord,
+  MemberProfileDto,
+  ProfileIdentityDto,
+  SportsmanData,
+  SportsmanProfileRecord,
+} from "./members.types";
 import { toKarateLevel, toSportsmanStatus } from "./karate";
 import { UpdateProfileBody } from "./profile.schemas";
 
 export type SportsmanProfileStore = {
-  findByUserId: (
-    userId: string,
-  ) => Promise<Awaited<ReturnType<SportsmenRepository["findByUserId"]>>>;
-  upsert: SportsmenRepository["upsert"];
-  isCoachOfSportsman: SportsmenRepository["isCoachOfSportsman"];
+  findByUserId(userId: string): Promise<SportsmanProfileRecord | null>;
+  upsert(userId: string, data: SportsmanData): Promise<void>;
+  isCoachOfSportsman(coachId: string, sportsmanId: string): Promise<boolean>;
 };
 
 export type CoachProfileStore = {
-  findByUserId: (
-    userId: string,
-  ) => Promise<Awaited<ReturnType<CoachesRepository["findByUserId"]>>>;
-  upsert: CoachesRepository["upsert"];
+  findByUserId(userId: string): Promise<CoachProfileRecord | null>;
+  upsert(userId: string, data: CoachData): Promise<void>;
 };
 
 export type ProfileUnitOfWork = {
@@ -72,7 +74,7 @@ export class ProfileService {
     private readonly runProfileTransaction: ProfileTransactionRunner,
   ) {}
 
-  async getProfile(authUser: JwtUser) {
+  async getProfile(authUser: JwtUser): Promise<MemberProfileDto> {
     const user = await this.root.identity.findUserById(authUser.id);
     if (!user) {
       throw new NotFoundError("User not found");
@@ -85,7 +87,10 @@ export class ProfileService {
     return this.buildProfile(user);
   }
 
-  async getMemberProfile(authUser: JwtUser, memberId: string) {
+  async getMemberProfile(
+    authUser: JwtUser,
+    memberId: string,
+  ): Promise<MemberProfileDto> {
     const requester = await this.root.identity.findUserById(authUser.id);
     if (!requester) {
       throw new NotFoundError("User not found");
@@ -116,7 +121,10 @@ export class ProfileService {
     return this.buildProfile(member);
   }
 
-  async updateProfile(authUser: JwtUser, body: UpdateProfileBody) {
+  async updateProfile(
+    authUser: JwtUser,
+    body: UpdateProfileBody,
+  ): Promise<MemberProfileDto> {
     return this.runProfileTransaction(async (unitOfWork) => {
       const { identity, locations, sportsmen, coaches } = unitOfWork;
       const user = await identity.findUserById(authUser.id);
@@ -191,12 +199,11 @@ export class ProfileService {
   private async buildProfile(
     user: UserSummary,
     unitOfWork: ProfileUnitOfWork = this.root,
-  ) {
-    const base = {
+  ): Promise<MemberProfileDto> {
+    const base: ProfileIdentityDto = {
       id: user.id,
       name: user.name,
       surname: user.surname,
-      role: user.role,
       email: user.email,
       gender: user.gender,
       phone_number: user.phone_number,
@@ -208,6 +215,7 @@ export class ProfileService {
 
       return {
         ...base,
+        role: "COACH",
         karate_level: coach?.karate_level ?? null,
         ...(await this.resolvePlaces(coach?.city_id, coach?.club_id, unitOfWork)),
         position: coach?.position ?? null,
@@ -224,6 +232,7 @@ export class ProfileService {
 
       return {
         ...base,
+        role: "SPORTSMAN",
         karate_level: sportsman?.karate_level ?? null,
         ...(await this.resolvePlaces(
           sportsman?.city_id,
@@ -237,14 +246,14 @@ export class ProfileService {
       };
     }
 
-    return base;
+    return { ...base, role: "ADMIN" };
   }
 
   private async findCurrentMemberProfile(
     userId: string,
     role: role_type,
     unitOfWork: ProfileUnitOfWork = this.root,
-  ) {
+  ): Promise<CoachProfileRecord | SportsmanProfileRecord | null> {
     if (role === role_type.COACH) {
       return unitOfWork.coaches.findByUserId(userId);
     }
@@ -260,7 +269,7 @@ export class ProfileService {
     cityId?: string | null,
     clubId?: string | null,
     unitOfWork: ProfileUnitOfWork = this.root,
-  ) {
+  ): Promise<{ city: Place | null; club: Place | null }> {
     const [city, club] = await Promise.all([
       cityId ? unitOfWork.locations.findCityById(cityId) : null,
       clubId ? unitOfWork.locations.findClubById(clubId) : null,

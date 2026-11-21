@@ -1,5 +1,10 @@
 import type { DbClient } from "../../shared";
-import type { role_type } from "../../../generated/prisma/client";
+import type {
+  CreateUserData,
+  UpdateUserData,
+  UserRecord,
+  UserSummary,
+} from "./identity.types";
 
 const userSummarySelect = {
   id: true,
@@ -12,47 +17,32 @@ const userSummarySelect = {
   birth_date: true,
 } as const;
 
-export type UpdateUserData = {
-  name?: string;
-  surname?: string;
-  email?: string;
-  gender?: string;
-  phone_number?: string;
-  birth_date?: Date;
-};
-
 export class UsersRepository {
   constructor(private readonly db: DbClient) {}
 
-  create(data: {
-    name: string;
-    surname: string;
-    email: string;
-    password: string;
-    role: role_type;
-  }) {
+  create(data: CreateUserData): Promise<UserRecord> {
     return this.db.users.create({ data });
   }
 
-  findByEmail(email: string) {
+  findByEmail(email: string): Promise<UserRecord | null> {
     return this.db.users.findUnique({ where: { email } });
   }
 
-  findSummaryById(id: string) {
+  findSummaryById(id: string): Promise<UserSummary | null> {
     return this.db.users.findUnique({
       where: { id },
       select: userSummarySelect,
     });
   }
 
-  findSummariesByIds(ids: string[]) {
+  findSummariesByIds(ids: string[]): Promise<UserSummary[]> {
     return this.db.users.findMany({
       where: { id: { in: ids } },
       select: userSummarySelect,
     });
   }
 
-  async update(id: string, data: UpdateUserData) {
+  async update(id: string, data: UpdateUserData): Promise<void> {
     if (Object.keys(data).length === 0) {
       return;
     }

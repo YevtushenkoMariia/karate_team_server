@@ -50,6 +50,9 @@ Inside a module:
 6. **Side effects across modules go through events.** Example: `identity`
    publishes `UserRegistered`; `members` subscribes and creates the coach or
    sportsman record. `identity` does not know `members` exists.
+7. **Repository contracts use explicit DTOs.** Define DTOs in `*.api.ts` or
+   `*.types.ts` and annotate repository/service boundaries; Prisma select
+   inference stays an implementation detail.
 
 Rules 1–3 are checked automatically: `npm run check:boundaries`.
 When adding a table, register its owner in `scripts/check-boundaries.mjs`.
