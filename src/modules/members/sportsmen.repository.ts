@@ -30,6 +30,15 @@ export class SportsmenRepository {
     });
   }
 
+  async isCoachOfSportsman(coachId: string, sportsmanId: string) {
+    const assignment = await this.db.coach_sportsman.findFirst({
+      where: { coach_id: coachId, sportsman_id: sportsmanId },
+      select: { coach_id: true },
+    });
+
+    return assignment !== null;
+  }
+
   findByUserId(userId: string) {
     return this.db.sportsmen.findUnique({
       where: { user_id: userId },

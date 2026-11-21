@@ -1,8 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 
-export const ProfileQuery = Type.Object({
+export const MemberProfileParams = Type.Object({
   userId: Type.String({ format: "uuid" }),
-  role: Type.String(),
 });
 
 export const UpdateProfileBody = Type.Object({
@@ -20,5 +19,5 @@ export const UpdateProfileBody = Type.Object({
   status: Type.Optional(Type.String()),
 });
 
-export type ProfileQuery = Static<typeof ProfileQuery>;
+export type MemberProfileParams = Static<typeof MemberProfileParams>;
 export type UpdateProfileBody = Static<typeof UpdateProfileBody>;

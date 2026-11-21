@@ -7,7 +7,7 @@ import { SportsmenRepository } from "./sportsmen.repository";
 import { CoachesRepository } from "./coaches.repository";
 import { ProfileService } from "./profile.service";
 import { ProfileController } from "./profile.controller";
-import { ProfileQuery, UpdateProfileBody } from "./profile.schemas";
+import { MemberProfileParams, UpdateProfileBody } from "./profile.schemas";
 
 type Deps = {
   db: Db;
@@ -48,11 +48,19 @@ export function createMembersModule(deps: Deps): AppModule {
 
       fastify.get("/profile", {
         schema: {
-          querystring: ProfileQuery,
           security: [{ bearerAuth: [] }],
         },
         onRequest: [fastify.authenticate, anyRole],
         handler: controller.getProfile,
+      });
+
+      fastify.get("/profile/:userId", {
+        schema: {
+          params: MemberProfileParams,
+          security: [{ bearerAuth: [] }],
+        },
+        onRequest: [fastify.authenticate, anyRole],
+        handler: controller.getMemberProfile,
       });
 
       fastify.put("/profile-update", {

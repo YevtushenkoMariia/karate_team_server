@@ -5,13 +5,14 @@ import type { LocationsApi } from "../locations";
 import { SportsmenRepository } from "./sportsmen.repository";
 import { CoachesRepository } from "./coaches.repository";
 import { toKarateLevel, toSportsmanStatus } from "./karate";
-import { ProfileQuery, UpdateProfileBody } from "./profile.schemas";
+import { UpdateProfileBody } from "./profile.schemas";
 
 type SportsmanProfileStore = {
   findByUserId: (
     userId: string,
   ) => Promise<Awaited<ReturnType<SportsmenRepository["findByUserId"]>>>;
   upsert: SportsmenRepository["upsert"];
+  isCoachOfSportsman: SportsmenRepository["isCoachOfSportsman"];
 };
 
 type CoachProfileStore = {
@@ -29,17 +30,45 @@ export class ProfileService {
     private readonly coaches: CoachProfileStore,
   ) {}
 
-  async getProfile(query: ProfileQuery) {
-    const user = await this.identity.findUserById(query.userId);
+  async getProfile(authUser: JwtUser) {
+    const user = await this.identity.findUserById(authUser.id);
     if (!user) {
       throw new NotFoundError("User not found");
     }
 
-    if (user.role !== query.role) {
+    if (user.role !== authUser.role) {
       throw new ForbiddenError("User role does not match");
     }
 
     return this.buildProfile(user);
+  }
+
+  async getMemberProfile(authUser: JwtUser, memberId: string) {
+    const requester = await this.identity.findUserById(authUser.id);
+    if (!requester) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (requester.role !== authUser.role) {
+      throw new ForbiddenError("User role does not match");
+    }
+
+    const member = await this.identity.findUserById(memberId);
+    if (!member) {
+      throw new NotFoundError("User not found");
+    }
+
+    const canView =
+      requester.role === role_type.ADMIN ||
+      (requester.role === role_type.COACH &&
+        member.role === role_type.SPORTSMAN &&
+        (await this.sportsmen.isCoachOfSportsman(requester.id, member.id)));
+
+    if (!canView) {
+      throw new ForbiddenError("You cannot view this profile");
+    }
+
+    return this.buildProfile(member);
   }
 
   async updateProfile(authUser: JwtUser, body: UpdateProfileBody) {

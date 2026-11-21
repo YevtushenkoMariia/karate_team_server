@@ -53,6 +53,7 @@ function createService() {
       club_id: savedPlaces.club_id,
       coach_sportsman: [],
     }),
+    isCoachOfSportsman: async () => false,
     upsert: async (_userId: string, data: SportsmanData) => {
       updates.push(data);
       savedPlaces = { city_id: data.city_id, club_id: data.club_id };
